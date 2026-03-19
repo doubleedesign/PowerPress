@@ -29,7 +29,8 @@ The steps broadly cover:
 - setting some default settings for Ninja Forms (if active)
 - setting up workspace and FTP deployment configuration for PhpStorm (except username and password)
 - registering and securing the site in Laravel Herd
-- initialising a Git repository. 
+- initialising a Git repository
+- saving admin credentials to BitWarden for new sites (optional)
 
 > [!NOTE]
 > Some values are assumed, some are derived from the kebab-case site name you provide when you run the script, and some are prompted for during the script execution.
@@ -61,11 +62,17 @@ Upon successful completion:
 - PHP, MySQL/MariaDB, [Git](https://git-scm.com/install/windows), [Composer](https://getcomposer.org/), [WP-CLI](https://wp-cli.org/), and [robocopy](https://learn.microsoft.com/en-us/windows-server/administration/windows-commands/robocopy) installed and available via command line*
 - PowerShell 7+
 - Permission to execute PowerShell scripts
-- [ACF Pro](https://www.advancedcustomfields.com/pro/) on your machine and a valid licence key.
+- [ACF Pro](https://www.advancedcustomfields.com/pro/) on your machine and a valid licence key
+- [BitWarden CLI](https://bitwarden.com/help/cli/) and a [personal API key](https://bitwarden.com/help/personal-api-key/) if wanting to save admin credentials for new sites automatically.
 
 _* Laravel Herd takes care of installing PHP and Composer automatically. If using the Pro edition, it can also take care of MySQL/MariaDB via the Services feature - you just need to configure it._
 
 The script will check the command-line prerequisites as the very first step, and stop if any are missing.
+
+> [!NOTE]
+> If you are using BitWarden CLI, the script is configured to look for your API credentials and master password in your system environment variables as `BW_CLIENTID`, `BW_CLIENTSECRET`, and `BW_PASSWORD` to save you having to enter credentials every time.
+> You can find this in the Windows control panel -> System -> Advanced system settings -> Environment Variables (or just search the Start menu for "Environment variables", it should come up).
+> Storing your master password there is optional - you should be promoted for it if it's not found.
 
 ---
 ## Setup and usage

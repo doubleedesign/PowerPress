@@ -3,6 +3,7 @@
 - [PowerShell errors](#powershell-errors)
 - [WP-CLI errors](#wp-cli-errors)
 - [Laravel Herd errors](#laravel-herd-errors)
+- [BitWarden CLI errors](#bitwarden-errors)
 
 ---
 ## PowerShell errors
@@ -122,3 +123,23 @@ netstat -aon | findstr :9001
 If it's something you can't stop, you can change the port Herd uses in the settings and stop and restart all services in Herd to work around it.
 
 If nothing comes up, you can also try changing the port in Herd and restarting all services; if that doesn't work try exiting Herd completely and restarting it.
+
+---
+## BitWarden errors
+
+### Credentials incorrect...but they're not
+
+#### Error
+You have double-checked that the credentials in your environment variables match those in your BitWarden account, and that PowerShell is able to read them correctly, but you get:
+
+> client_id or client_secret is incorrect. Try again.
+
+#### Cause
+This can occur if your account is on the BitWarden EU server or a self-hosted instance, because the default server for the BitWarden CLI is the US one.
+
+#### Solution
+For the EU server, update the config like so:
+
+```powershell
+bw config server https://vault.bitwarden.eu
+```

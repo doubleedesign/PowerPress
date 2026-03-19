@@ -6,9 +6,11 @@
 )
 
 # Initial module imports that don't rely on config being set up yet and need to be used before that
-Import-Module $PSScriptRoot\Console.psm1 -WarningAction SilentlyContinue
-Import-Module $PSScriptRoot\Dependencies.psm1 -WarningAction SilentlyContinue
-Import-Module $PSScriptRoot\FileHandler.psm1 -WarningAction SilentlyContinue
+# Note: -Force is just to ensure the latest is loaded, so if the script is re-run in the same PowerShell session during development it picks up changes
+Import-Module $PSScriptRoot\Console.psm1 -WarningAction SilentlyContinue -Force
+Import-Module $PSScriptRoot\Dependencies.psm1 -WarningAction SilentlyContinue -Force
+Import-Module $PSScriptRoot\FileHandler.psm1 -WarningAction SilentlyContinue -Force
+Import-Module $PSScriptRoot\CredentialHandler.psm1  -WarningAction SilentlyContinue -Force
 
 # Make sure site name was provided and show help if not
 if ($Help -or [string]::IsNullOrEmpty($SiteName)) {
@@ -72,6 +74,9 @@ foreach ($class in $classes) {
 		}
 	}
 }
+# BitWarden CLI is treated a little differently than other dependencies because we need to check env variables as well as the command,
+# and it makes sense to log in at the same time to avoid checking "can access Bitwarden" multiple times
+$useBitwarden = Maybe-Log-Into-Bitwarden
 Display-Section-Footer
 
 # Store location the script was called from
@@ -151,12 +156,13 @@ if($willImportExistingDb) {
 	WarningMessage "The site name will be overridden by your database import"
 }
 
-# Import the modules that will use the config
-Import-Module $PSScriptRoot\DatabaseHandler.psm1  -WarningAction SilentlyContinue
-Import-Module $PSScriptRoot\ComposerHandler.psm1  -WarningAction SilentlyContinue
-Import-Module $PSScriptRoot\CanvasRepoHandler.psm1  -WarningAction SilentlyContinue
-Import-Module $PSScriptRoot\WordPressHandler.psm1  -WarningAction SilentlyContinue
-Import-Module $PSScriptRoot\PhpStormConfigHandler.psm1  -WarningAction SilentlyContinue
+# Import the modules that will use the config, 
+# with -Force to ensure changes are reflected if re-running in the same PowerShell session during development
+Import-Module $PSScriptRoot\DatabaseHandler.psm1  -WarningAction SilentlyContinue -Force
+Import-Module $PSScriptRoot\ComposerHandler.psm1  -WarningAction SilentlyContinue -Force
+Import-Module $PSScriptRoot\CanvasRepoHandler.psm1  -WarningAction SilentlyContinue -Force
+Import-Module $PSScriptRoot\WordPressHandler.psm1  -WarningAction SilentlyContinue -Force
+Import-Module $PSScriptRoot\PhpStormConfigHandler.psm1  -WarningAction SilentlyContinue -Force
 
 # Handle database creation if required
 # Note: We cannot run Maybe-Import-Database yet because that uses some wp-cli commands which are not available until after WP core is added.
@@ -381,14 +387,15 @@ Display-Section-Footer
 Write-Host "`n ============================ Setup Complete ================================" -ForegroundColor Green
 $siteUrl = $global:SiteConfig.SiteUrl
 Write-Host "Admin URL: $siteUrl/wp-admin" -ForegroundColor Cyan
-if(-not $willImportExistingDb) {
-	$global:SiteConfig.AdminPassword | Set-Clipboard
-	SuccessMessage "Your admin password has been copied to the clipboard"
+$credentialsSaved = $False
+if(-not $willImportExistingDb -and $useBitwarden) {
+	$credentialsSaved = Maybe-Save-Credentials
 }
+
 Write-Host "You might still need to:" -ForegroundColor Cyan
 Write-Host "`t - Update README.md with project-specific details" -ForegroundColor Cyan
 Write-Host "`t - Enter your FTP username and password in PhpStorm's deployment settings" -ForegroundColor Cyan
-if(-not $willImportExistingDb) {
+if(-not $willImportExistingDb -and -not $credentialsSaved) {
 	$adminUser = $global:SiteConfig.AdminUser
 	$adminPassword = $global:SiteConfig.AdminPassword
 	Write-Host "`t - Save your admin username and password ( $adminUser | $adminPassword ) to your password manager or another safe location" -ForegroundColor Cyan
@@ -424,3 +431,7 @@ try {
 catch {
 	WarningMessage "Could not automatically open the project in PhpStorm :("
 }
+
+# Cleanup
+Maybe-Log-Out-Of-Bitwarden
+Set-Location $scriptLocation
