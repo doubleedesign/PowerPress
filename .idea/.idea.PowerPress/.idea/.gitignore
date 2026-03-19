@@ -1,6 +1,5 @@
 ﻿# Default ignored files
 /shelf/
-/workspace.xml
 # Rider ignored files
 /contentModel.xml
 /projectSettingsUpdater.xml
@@ -13,3 +12,5 @@
 /dataSources.local.xml
 # Editor-based HTTP Client requests
 /httpRequests/
+# Copilot
+/copilot.data.migration.ask2agent.xml
