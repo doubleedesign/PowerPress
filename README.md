@@ -61,6 +61,7 @@ Upon successful completion:
 - [Laravel Herd](https://herd.laravel.com/windows) (preferably Pro)
 - PHP, MySQL/MariaDB, [Git](https://git-scm.com/install/windows), [Composer](https://getcomposer.org/), [WP-CLI](https://wp-cli.org/), and [robocopy](https://learn.microsoft.com/en-us/windows-server/administration/windows-commands/robocopy) installed and available via command line*
 - PowerShell 7+
+- [.NET 10+](https://dotnet.microsoft.com/en-us/download/dotnet/10.0) system-wide
 - Permission to execute PowerShell scripts
 - [ACF Pro](https://www.advancedcustomfields.com/pro/) on your machine and a valid licence key
 - [BitWarden CLI](https://bitwarden.com/help/cli/) and a [personal API key](https://bitwarden.com/help/personal-api-key/) if wanting to save admin credentials for new sites automatically.

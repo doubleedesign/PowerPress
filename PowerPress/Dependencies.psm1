@@ -1,4 +1,6 @@
 ﻿function Check-Dependencies {
+	$Logger = [PowerPress.Logger]::new()
+
 	# Check PowerShell version
 	if ($PSVersionTable.PSVersion.Major -lt 7) {
 		ErrorMessage "This script requires PowerShell 7 or higher. Please update your PowerShell version and try again."
@@ -6,9 +8,9 @@
 		exit 1
 	}
 	else {
-		SuccessMessage "PowerShell version is $($PSVersionTable.PSVersion)"
+		SuccessMessage "PowerShell version is $( $PSVersionTable.PSVersion )"
 	}
-	
+
 	$commands = @("php", "mysql", "composer", "git", "herd", "robocopy", "wp")
 	$missingCommands = @()
 	foreach ($command in $commands) {
@@ -20,12 +22,12 @@
 			SuccessMessage("$command is available")
 		}
 	}
-	
+
 	if ($missingCommands.Count -gt 0) {
 		WarningMessage("Please install the missing dependencies and ensure they are in your PATH, and try again")
 		exit 1
 	}
-	
+
 	$requiredWpCommands = @("core", "scaffold", "option", "db", "search-replace", "plugin", "theme", "rewrite")
 	$missingWpCommands = @()
 	foreach ($command in $requiredWpCommands) {
@@ -33,19 +35,20 @@
 		if ($LASTEXITCODE -ne 0) {
 			ErrorMessage "WP-CLI command '$command' is not available"
 			$missingWpCommands += $command
-		} else {
+		}
+		else {
 			SuccessMessage "WP-CLI command '$command' is available"
 		}
 	}
-	if($missingWpCommands.Count -gt 0) {
-		ErrorMessage "WP-CLI is missing some required commands: $($missingWpCommands -join ", "). `n If you are managing WP-CLI via composer, try globally installing the following packages:"
-		if($missingWpCommands.length -gt 1 -and $missingWpCommands -contains "wp search-replace") {
+	if ($missingWpCommands.Count -gt 0) {
+		ErrorMessage "WP-CLI is missing some required commands: $( $missingWpCommands -join ", " ). `n If you are managing WP-CLI via composer, try globally installing the following packages:"
+		if ($missingWpCommands.length -gt 1 -and $missingWpCommands -contains "wp search-replace") {
 			Write-Host "wp-cli/search-replace-command"
 		}
-		if($missingWpCommands.length -gt 0 -and ($missingCommands -notcontains "wp search-replace")) {
+		if ($missingWpCommands.length -gt 0 -and ($missingCommands -notcontains "wp search-replace")) {
 			Write-Host "wp-cli/wp-cli-bundle"
 		}
-		
+
 		Write-Host ""
 		exit 1
 	}
@@ -85,7 +88,8 @@ function Check-Php-Extensions {
 		if (-not (php -m | Select-String -Pattern $extension)) {
 			ErrorMessage("PHP extension '$extension' is not enabled")
 			$missingExtensions += $extension
-		} else {
+		}
+		else {
 			SuccessMessage("PHP extension '$extension' is enabled")
 		}
 	}

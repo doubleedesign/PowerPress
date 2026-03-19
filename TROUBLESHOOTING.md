@@ -1,9 +1,27 @@
 ﻿# Troubleshooting PowerPress
 
+- [.NET version](#net-version)
 - [PowerShell errors](#powershell-errors)
 - [WP-CLI errors](#wp-cli-errors)
 - [Laravel Herd errors](#laravel-herd-errors)
 - [BitWarden CLI errors](#bitwarden-errors)
+
+---
+## .NET version
+
+Note that the .NET version installed in Rider has no bearing on the system-wide version that an independent PowerShell terminal will use.
+
+You can check if you have .NET 10+ installed system-wide by running the following command in PowerShell:
+
+```powershell
+dotnet --info
+```
+
+If not you can [download the installer](https://dotnet.microsoft.com/en-us/download/dotnet/10.0) or install the latest using Chocolatey:
+
+```powershell
+choco install dotnet
+```
 
 ---
 ## PowerShell errors

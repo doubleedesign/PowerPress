@@ -5,6 +5,44 @@
 	[switch]$Help
 )
 
+$dotnet = Get-Command dotnet | Select-Object -ExpandProperty Version
+$versionNumber = [int]$dotnet.Major
+if ($versionNumber -lt 10) {
+	Write-Host "`n✖  PowerPress requires .NET 10 or higher." -ForegroundColor Red
+	Write-Host "   Download installer from: https://dotnet.microsoft.com/en-us/download/dotnet"
+	Write-Host "   Or run: choco install dotnet"
+	exit 1
+}
+else {
+	Write-Host "✔  .NET version is $dotnet" -ForegroundColor Green
+}
+
+# Load C# classes if they haven't already been loaded in this session
+$classFiles = @('ConsoleBase', 'Logger', 'UserInput', 'LocalSiteConfig') | ForEach-Object {
+	Join-Path $PSScriptRoot ".\$_.cs"
+}
+$allLoaded = @('PowerPress.ConsoleBase', 'PowerPress.Logger', 'PowerPress.UserInput', 'PowerPress.LocalSiteConfig') |
+	ForEach-Object { ([System.Management.Automation.PSTypeName]$_).Type } |
+	Where-Object { $_ -ne $null }
+
+if ($allLoaded.Count -lt 4) {
+	try {
+		# Load them all at once so inheritance works - otherwise classes can't "see" their parent
+		Add-Type -Path $classFiles
+		Write-Host "✔  Loaded all classes" -ForegroundColor Green
+	}
+	catch {
+		Write-Host "✖  $( $_.Exception.Message )" -ForegroundColor Red
+		if ($_.Exception.InnerException) {
+			Write-Host "   $( $_.Exception.InnerException.Message )" -ForegroundColor Red
+		}
+		exit 1
+	}
+}
+
+
+$Logger = [PowerPress.Logger]::new()
+
 # Initial module imports that don't rely on config being set up yet and need to be used before that
 # Note: -Force is just to ensure the latest is loaded, so if the script is re-run in the same PowerShell session during development it picks up changes
 Import-Module $PSScriptRoot\Console.psm1 -WarningAction SilentlyContinue -Force
@@ -47,7 +85,7 @@ Write-Host "Repo URL: https://github.com/doubleedesign/powerpress" -ForegroundCo
 Write-Host "`nPress 'Enter' to start." -ForegroundColor Cyan
 do {
 	$key = [Console]::ReadKey("noecho")
-} while($key.Key -ne "Enter")
+} while ($key.Key -ne "Enter")
 Display-Section-Footer
 
 # Check dependencies and PHP extensions before doing anything else
@@ -60,20 +98,6 @@ $env:PHP_CLI_OPTS = "-d display_errors=0 -d error_reporting=0"
 WarningMessage "PHP errors and warnings have been suppressed in the PHP_CLI_OPTS environment variable."
 WarningMessage "Individual commands may not be affected by this due to how they work internally."
 
-# Load C# classes if they haven't already been loaded in this session
-$classes = @('LocalSiteConfig')
-foreach ($class in $classes) {
-	if (-not ([System.Management.Automation.PSTypeName]$class).Type) {
-		try {
-			Add-Type -Path (Join-Path $PSScriptRoot ".\$class.cs")
-			SuccessMessage "Loaded class: $class"
-		}
-		catch {
-			ErrorMessage "Failed to load class: $_"
-			exit 1
-		}
-	}
-}
 # BitWarden CLI is treated a little differently than other dependencies because we need to check env variables as well as the command,
 # and it makes sense to log in at the same time to avoid checking "can access Bitwarden" multiple times
 $useBitwarden = Maybe-Log-Into-Bitwarden
@@ -87,7 +111,7 @@ Display-Section-Header -Title "Base config"
 $username = $env:USERNAME
 $defaultProjectsDir = "C:\Users\$username\ClientSites"
 $PROJECTS_DIR = Prompt-For-Text -Message "Enter the path to your website projects directory" -DefaultValue $defaultProjectsDir
-if ([string]::IsNullOrEmpty($PROJECTS_DIR)) {
+if ( [string]::IsNullOrEmpty($PROJECTS_DIR)) {
 	$PROJECTS_DIR = $defaultProjectsDir
 }
 InfoMessage "Using projects directory: $PROJECTS_DIR"
@@ -108,7 +132,7 @@ if (-not $continue) {
 }
 
 $ProductionUrl = Prompt-For-Text -Message "Enter the production URL for this site (without https://)"
-if([string]::IsNullOrEmpty($productionUrl)) {
+if ( [string]::IsNullOrEmpty($productionUrl)) {
 	$ProductionUrl = ""
 }
 Display-Section-Footer
@@ -125,7 +149,7 @@ $importDbChoice = Prompt-For-YesOrNo `
     -NoOption "No, this is a new site install" `
     -DefaultYes $false
 $willImportExistingDb = $importDbChoice -eq $true
-if($willImportExistingDb) {
+if ($willImportExistingDb) {
 	SuccessMessage "You will be prompted for the path to your SQL file later in the script"
 }
 else {
@@ -143,7 +167,7 @@ $global:SiteConfig = [LocalSiteConfig]::new(
 	$dbPass
 )
 
-if(-not $willImportExistingDb) {
+if (-not $willImportExistingDb) {
 	$defaultAdminEmail = "leesa@doubleedesign.com.au"
 	$AdminEmail = Prompt-For-Text "Enter the admin email for this site" -DefaultValue $defaultAdminEmail
 	$global:SiteConfig.AddWordPressAdmin($AdminEmail);
@@ -152,7 +176,7 @@ if(-not $willImportExistingDb) {
 # Output all the config values for info and debugging
 InfoMessage "`nFinal configuration:"
 Display-Json-Table -JsonString $global:SiteConfig.GetJsonString()
-if($willImportExistingDb) {
+if ($willImportExistingDb) {
 	WarningMessage "The site name will be overridden by your database import"
 }
 
@@ -179,12 +203,12 @@ Update-WpConfig
 
 # Determine whether to use composer.dev.json and local packages based on env variable set by the -Dev flag, and make the necessary updates
 $willUseDevComposerJson = $env.POWERPRESS_DEV -eq "1"
-if($willUseDevComposerJson) {
+if ($willUseDevComposerJson) {
 	InfoMessage "Running setup in dev mode. composer.dev.json and local copies of Double-E Design packages will be used where applicable."
 	Composer-Json-Initial-Update -composerJsonPath (Join-Path $global:SiteConfig.WpDir "composer.dev.json")
 	$pathToLocalPackages = "C:\Users\$username\PhpStormProjects"
 	$LOCAL_PACKAGES_DIR = Prompt-For-Text -Message "Enter the path to your local packages directory for Comet Components, Double-E Base Plugin, etc." -DefaultValue $pathToLocalPackages
-	if ([string]::IsNullOrEmpty($LOCAL_PACKAGES_DIR)) {
+	if ( [string]::IsNullOrEmpty($LOCAL_PACKAGES_DIR)) {
 		$LOCAL_PACKAGES_DIR = $pathToLocalPackages
 	}
 	InfoMessage "Using local packages directory: $LOCAL_PACKAGES_DIR"
@@ -200,7 +224,7 @@ else {
 Run-Composer-Install
 
 # Import existing database
-if($willImportExistingDb) {
+if ($willImportExistingDb) {
 	try {
 		Maybe-Import-Database
 		wp rewrite flush
@@ -223,7 +247,7 @@ Display-Section-Header -Title "Plugins, Themes, and Uploads"
 # Add ACF Pro
 $defaultAcfProPath = "C:\Users\$username\PhpStormProjects\advanced-custom-fields-pro"
 $acfProPath = Prompt-For-Text -Message "`Enter the path to your local copy of the Advanced Custom Fields Pro plugin" -DefaultValue $defaultAcfProPath
-if ([string]::IsNullOrEmpty($acfProPath)) {
+if ( [string]::IsNullOrEmpty($acfProPath)) {
 	$acfProPath = $defaultAcfProPath
 }
 Copy-Plugin-From-Local-Path -sourcePath $acfProPath
@@ -247,13 +271,13 @@ if ($importingWpContent) {
 			$sourcePath = $plugin.FullName
 			Copy-Plugin-From-Local-Path -sourcePath $sourcePath
 		}
-		
+
 		$themesToImport = Get-ChildItem -Path (Join-Path $pathToContent "themes") -Directory
 		foreach ($theme in $themesToImport) {
 			$sourcePath = $theme.FullName
 			Copy-Theme-From-Local-Path -sourcePath $sourcePath
 		}
-		
+
 		# Copy uploads folder if it exists in the backup
 		$sourceUploadsPath = Join-Path $pathToContent "uploads"
 		Copy-Uploads-Directory-From-Local-Path -sourcePath $sourceUploadsPath
@@ -262,10 +286,10 @@ if ($importingWpContent) {
 
 # If the plugins directory now contains certain things, remove things that are not compatible or duplicate the functionality
 $folderMap = @{
-   "classic-editor" = @("comet-plugin-blocks", "comet-calendar")
-   "gravity-forms" = @("ninja-forms", "doublee-ninja-markup")
-   "autodescription" = @("yoast-seo")
-   "simply-disable-comments" = @("disable-comments")
+	"classic-editor" = @("comet-plugin-blocks", "comet-calendar")
+	"gravity-forms" = @("ninja-forms", "doublee-ninja-markup")
+	"autodescription" = @("yoast-seo")
+	"simply-disable-comments" = @("disable-comments")
 }
 foreach ($triggerFolder in $folderMap.Keys) {
 	foreach ($conflictingFolder in $folderMap[$triggerFolder]) {
@@ -274,7 +298,7 @@ foreach ($triggerFolder in $folderMap.Keys) {
 }
 
 # If a theme was not imported, create a new child theme
-if(-not $importingWpContent) {
+if (-not $importingWpContent) {
 	Create-And-Activate-Child-Theme
 }
 
@@ -309,16 +333,17 @@ foreach ($plugin in $pluginsToComposerUpdate) {
 		Set-Location $pluginPath
 		if (-not $willUseDevComposerJson) {
 			Run-Composer-Command-With-Custom-Output-Handling -command "install --no-dev --prefer-dist --no-cache"
-		} else {
+		}
+		else {
 			Run-Composer-Command-With-Custom-Output-Handling -command "install --no-cache"
 		}
-	
+
 		Set-Location $global:SiteConfig.WpDir
 	}
 }
 
 InfoMessage "Activating plugins"
-foreach($plugin in $plugins) {
+foreach ($plugin in $plugins) {
 	$pluginPath = Join-Path $global:SiteConfig.WpDir "wp-content\plugins\$plugin"
 	if (Test-Path $pluginPath) {
 		Run-Wp-Cli-Command-With-Custom-Output -command "plugin activate $plugin"
@@ -329,7 +354,7 @@ foreach($plugin in $plugins) {
 }
 
 $defaultAcfProKey = [Environment]::GetEnvironmentVariable("ACF_PRO_KEY", "User")
-if([string]::IsNullOrEmpty($defaultAcfProKey)) {
+if ( [string]::IsNullOrEmpty($defaultAcfProKey)) {
 	$acfProKey = Prompt-For-Text -Message "Enter your ACF Pro Developer licence key"
 }
 else {
@@ -373,7 +398,7 @@ Display-Section-Header -Title "Local web server"
 InfoMessage "Registering site in Laravel Herd"
 Set-Location $global:SiteConfig.WpDir
 $SiteSlug = $global:SiteConfig.SiteSlug
-herd link $SiteSlug 
+herd link $SiteSlug
 herd secure $SiteSlug
 Display-Section-Footer
 
@@ -388,19 +413,19 @@ Write-Host "`n ============================ Setup Complete =====================
 $siteUrl = $global:SiteConfig.SiteUrl
 Write-Host "Admin URL: $siteUrl/wp-admin" -ForegroundColor Cyan
 $credentialsSaved = $False
-if(-not $willImportExistingDb -and $useBitwarden) {
+if (-not $willImportExistingDb -and $useBitwarden) {
 	$credentialsSaved = Maybe-Save-Credentials
 }
 
 Write-Host "You might still need to:" -ForegroundColor Cyan
 Write-Host "`t - Update README.md with project-specific details" -ForegroundColor Cyan
 Write-Host "`t - Enter your FTP username and password in PhpStorm's deployment settings" -ForegroundColor Cyan
-if(-not $willImportExistingDb -and -not $credentialsSaved) {
+if (-not $willImportExistingDb -and -not $credentialsSaved) {
 	$adminUser = $global:SiteConfig.AdminUser
 	$adminPassword = $global:SiteConfig.AdminPassword
 	Write-Host "`t - Save your admin username and password ( $adminUser | $adminPassword ) to your password manager or another safe location" -ForegroundColor Cyan
 }
-if(-not $importingWpContent) {
+if (-not $importingWpContent) {
 	Write-Host "`t - Create a project plugin for custom post types, taxonomies, and other functionality" -ForegroundColor Cyan
 	Write-Host "`t   Template: https://github.com/doubleedesign/wp-plugin-template" -ForegroundColor Cyan
 }
