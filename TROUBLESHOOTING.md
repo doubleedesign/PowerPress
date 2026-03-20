@@ -1,13 +1,15 @@
 ﻿# Troubleshooting PowerPress
 
-- [.NET version](#net-version)
-- [PowerShell errors](#powershell-errors)
-- [WP-CLI errors](#wp-cli-errors)
-- [Laravel Herd errors](#laravel-herd-errors)
-- [BitWarden CLI errors](#bitwarden-errors)
+- [.NET, C#, and Rider](#net-c-and-rider)
+- [PowerShell](#powershell)
+- [WP-CLI](#wp-cli)
+- [Laravel Herd(#laravel-herd)
+- [BitWarden CLI](#bitwarden-cli)
 
 ---
-## .NET version
+## .NET, C#, and Rider
+
+### .NET version problems
 
 Note that the .NET version installed in Rider has no bearing on the system-wide version that an independent PowerShell terminal will use.
 
@@ -23,8 +25,39 @@ If not you can [download the installer](https://dotnet.microsoft.com/en-us/downl
 choco install dotnet
 ```
 
+### C# compiler errors when running script
+
+#### Errors
+
+> "Name does not exist in the current context"
+> "Are you missing a using directive or assembly reference?"
+
+Examples:
+```
+error CS0103: The name 'Path' does not exist in the current context
+     | result.Add($"{Path.GetFileName(fileName)}:{frame.GetFileLineNumber()}");
+```
+```
+error CS0246: The type or namespace name 'List<>' could not be found (are you missing a using directive or
+     | an assembly reference?)  private List<string> GetCallingFunctionNames(int traceLevels) {    
+```
+
+#### Cause
+PowerShell is loading C# classes using the `Add-Type` cmdlet, which may not have loaded the namespaces that C# usually expects to be available by default (which is why Rider doesn't show any errors when editing the files).
+
+`using` statements for some of these things, like `System.IO` and `System.Collections.Generic`, may be interpreted by Rider as unused or redundant and removed automatically on save, but they are actually required for the script to run. 
+
+#### Solution
+Add this above the directives in the C# class file that's causing the error:
+
+```csharp
+// ReSharper disable RedundantUsingDirective
+```
+
+This will prevent Rider from removing any `using` statements below it.
+
 ---
-## PowerShell errors
+## PowerShell
 
 ### "Running scripts is disabled on this system"
 
@@ -92,9 +125,9 @@ try {
 Alternatively you could update your configuration for calling the PowerPress script to include `-NoProfile` and `-ErrorAction SilentlyContinue` to prevent your profile from being loaded for this particular script.
 
 ---
-## WP-CLI errors
+## WP-CLI
 
-### "Not a registered command"
+### "Not a registered command" error
 
 #### Error
 > Error: 'core' is not a registered wp command 
@@ -122,9 +155,9 @@ composer global require wp-cli/core-command wp-cli/search-replace-command wp-cli
 You can find all WP-CLI Composer packages by [searching for "wp-cli" on Packagist](https://packagist.org/?query=wp-cli).
 
 ---
-## Laravel Herd errors
+## Laravel Herd
 
-### Herd is not running...but it is
+### Error saying Herd is not running...but it is
 
 #### Error
 > The Herd Desktop application is not running. Please start Herd and try again.
@@ -143,9 +176,9 @@ If it's something you can't stop, you can change the port Herd uses in the setti
 If nothing comes up, you can also try changing the port in Herd and restarting all services; if that doesn't work try exiting Herd completely and restarting it.
 
 ---
-## BitWarden errors
+## BitWarden
 
-### Credentials incorrect...but they're not
+### Error saying credentials are incorrect...but they're not
 
 #### Error
 You have double-checked that the credentials in your environment variables match those in your BitWarden account, and that PowerShell is able to read them correctly, but you get:
