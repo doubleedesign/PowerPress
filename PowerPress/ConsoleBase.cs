@@ -17,13 +17,14 @@ public abstract class ConsoleBase {
 		"RunComposerCommand",
 		"RemoveWithWait",
 		"Log",
-		"Success",
-		"Warning",
-		"Error",
-		"Info",
-		"Debug",
+		"SuccessMessage",
+		"WarningMessage",
+		"ErrorMessage",
+		"InfoMessage",
+		"DebugMessage",
 		"PromptForText",
-		"PromptForYesOrNo"
+		"PromptForYesOrNo",
+		"PromptForSelection"
 	};
 
 	protected ConsoleBase() {
