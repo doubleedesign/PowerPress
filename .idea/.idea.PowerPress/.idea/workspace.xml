@@ -6,10 +6,19 @@
   <component name="AutoImportSettings">
     <option name="autoReloadType" value="SELECTIVE" />
   </component>
+  <component name="CMakeProjectFlavorService">
+    <option name="flavorId" value="CMakePlainProjectFlavor" />
+  </component>
+  <component name="CMakeSettings">
+    <configurations />
+  </component>
   <component name="ChangeListManager">
     <list default="true" id="b7104dd0-933d-420c-984d-6ffaddda2db4" name="Changes" comment="">
       <change beforePath="$PROJECT_DIR$/.idea/.idea.PowerPress/.idea/workspace.xml" beforeDir="false" afterPath="$PROJECT_DIR$/.idea/.idea.PowerPress/.idea/workspace.xml" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/TROUBLESHOOTING.md" beforeDir="false" afterPath="$PROJECT_DIR$/TROUBLESHOOTING.md" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/PowerPress.sln.DotSettings.user" beforeDir="false" afterPath="$PROJECT_DIR$/PowerPress.sln.DotSettings.user" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/PowerPress.slnx" beforeDir="false" afterPath="$PROJECT_DIR$/PowerPress.slnx" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/PowerPress/DatabaseHandler.cs" beforeDir="false" afterPath="$PROJECT_DIR$/PowerPress/DatabaseHandler.cs" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/PowerPress/PowerPress.csproj" beforeDir="false" afterPath="$PROJECT_DIR$/PowerPress/PowerPress.csproj" afterDir="false" />
     </list>
     <option name="SHOW_DIALOG" value="false" />
     <option name="HIGHLIGHT_CONFLICTS" value="true" />
@@ -19,6 +28,7 @@
   <component name="CopilotPersistence">
     <persistenceIdMap>
       <entry key="_C:/Users/leesa/.config/herd/bin/PowerPress" value="3Ae6N7efxpTPs8NwuhCEBjhYmqi" />
+      <entry key="_C:/Users/leesa/RiderProjects/PowerPress" value="3BkBYrABFjTyHEeAhYH1nyaTINb" />
     </persistenceIdMap>
   </component>
   <component name="DpaMonitoringSettings">
@@ -28,15 +38,21 @@
     <option name="RECENT_GIT_ROOT_PATH" value="$PROJECT_DIR$" />
   </component>
   <component name="HighlightingSettingsPerFile">
+    <setting file="file://$APPLICATION_CONFIG_DIR$/resharper-host/SourcesCache/65dd1f9da52e89b509975895aa8b501e3d1c428e15c01aaa6cced7f3ac2a60/MySqlConnectionStringBuilder.cs" root0="FORCE_HIGHLIGHTING" />
+    <setting file="file://$APPLICATION_CONFIG_DIR$/resharper-host/SourcesCache/a03dbdcc98d1bbda729a39571247393e51fd3f9a497f8a88f14d6f6a63fe216f/MySqlCommand.cs" root0="SKIP_HIGHLIGHTING" />
+    <setting file="file://$APPLICATION_CONFIG_DIR$/resharper-host/SourcesCache/f7f74dd9d1daa3b0487ffb7cb62b4d05c69c1d5cc8b71a52835bfcf565497/MySqlDataReader.cs" root0="SKIP_HIGHLIGHTING" />
+    <setting file="file://$PROJECT_DIR$/PowerPress/DatabaseHandler.cs" root0="FORCE_HIGHLIGHTING" />
     <setting file="file://$PROJECT_DIR$/PowerPress/LocalSiteConfig.cs" root0="FORCE_HIGHLIGHTING" />
     <setting file="file://$PROJECT_DIR$/PowerPress/Logger.cs" root0="FORCE_HIGHLIGHTING" />
+    <setting file="file://$PROJECT_DIR$/PowerPress/PowerShellBridge.cs" root0="FORCE_HIGHLIGHTING" />
     <setting file="file://$PROJECT_DIR$/PowerPress/UserInput.cs" root0="FORCE_HIGHLIGHTING" />
     <setting file="file://$PROJECT_DIR$/PowerPress/obj/PowerPress.csproj.nuget.dgspec.json" root0="FORCE_HIGHLIGHTING" />
     <setting file="file://$PROJECT_DIR$/PowerPress/obj/project.packagespec.json" root0="FORCE_HIGHLIGHTING" />
-    <setting file="file://$APPLICATION_CONFIG_DIR$/resharper-host/SourcesCache/279d944464b861dca6292a4950b48021ca91f31e29cc97c89c5369341263d9/ConsoleColor.cs" root0="FORCE_HIGHLIGHTING" />
-    <setting file="file://$APPLICATION_CONFIG_DIR$/resharper-host/SourcesCache/7ec3802d718194c07e62ca53f7764621804380ad5e9e1227f5f066ba50469d21/Console.cs" root0="FORCE_HIGHLIGHTING" />
   </component>
   <component name="MetaFilesCheckinStateConfiguration" checkMetaFiles="true" />
+  <component name="ProblemsViewState">
+    <option name="selectedTabId" value="CurrentFile" />
+  </component>
   <component name="ProjectColorInfo">{
   &quot;associatedIndex&quot;: 6
 }</component>
@@ -48,18 +64,22 @@
   </component>
   <component name="PropertiesComponent"><![CDATA[{
   "keyToString": {
-    ".NET Project.PowerPress.executor": "Run",
+    ".NET Project.PowerPress.executor": "Debug",
     "ASKED_SHARE_PROJECT_CONFIGURATION_FILES": "true",
     "ModuleVcsDetector.initialDetectionPerformed": "true",
     "RunOnceActivity.ShowReadmeOnStart": "true",
     "RunOnceActivity.TerminalTabsStorage.copyFrom.TerminalArrangementManager.252": "true",
+    "RunOnceActivity.cidr.known.project.marker": "true",
     "RunOnceActivity.git.unshallow": "true",
+    "RunOnceActivity.readMode.enableVisualFormatting": "true",
+    "cidr.known.project.marker": "true",
+    "codeWithMe.voiceChat.enabledByDefault": "false",
     "com.intellij.ml.llm.matterhorn.ej.ui.settings.DefaultModelSelectionForGA.v1": "true",
     "git-widget-placeholder": "master",
     "ignore.virus.scanning.warn.message": "true",
     "junie.onboarding.icon.badge.shown": "true",
     "rider.code.cleanup.on.save": "true",
-    "settings.editor.selected.configurable": "Inspections-C#",
+    "settings.editor.selected.configurable": "preferences.sourceCode.C#",
     "to.speed.mode.migration.done": "true"
   }
 }]]></component>
@@ -99,6 +119,8 @@
       <workItem from="1773280381636" duration="64000" />
       <workItem from="1773874446036" duration="25430000" />
       <workItem from="1773961664755" duration="9708000" />
+      <workItem from="1775023229541" duration="359000" />
+      <workItem from="1775027174964" duration="11808000" />
     </task>
     <servers />
   </component>
@@ -124,6 +146,11 @@
         </breakpoint>
       </breakpoints>
     </breakpoint-manager>
+    <watches-manager>
+      <configuration name="DotNetProject">
+        <watch expression="result.Output" custom="1" />
+      </configuration>
+    </watches-manager>
   </component>
   <component name="XSLT-Support.FileAssociations.UIState">
     <expand />

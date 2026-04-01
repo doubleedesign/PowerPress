@@ -9,7 +9,7 @@ string action = ui.PromptForSelection(
 	"Select an action:",
 	new Dictionary<string, string> {
 		["Run the script"] = "run",
-		["Manually run a single module"] = "test"
+		["Manually run a selected action"] = "test"
 	}
 );
 
@@ -19,12 +19,16 @@ if (action == "test") {
 		new Dictionary<string, string> {
 			["Check dependencies"] = "deps",
 			["Check Bitwarden access"] = "bitwarden-access",
-			["Test saving credentials in Bitwarden"] = "bitwarden-save"
+			["Test saving credentials in Bitwarden"] = "bitwarden-save",
+			["Create an empty database"] = "database",
+			["Import a database"] = "import"
 		}
 	);
 
 	Dependencies deps = new();
 	BitwardenHandler bw = new();
+	LocalSiteConfig testSiteConfig = new("test-site", "C:/temp/test-site", "https://example.com");
+	DatabaseHandler db = new(testSiteConfig);
 
 	switch (module) {
 		case "deps":
@@ -44,6 +48,13 @@ if (action == "test") {
 			bw.MaybeSaveCredentials("example.com", "https://example.com", "admin", "password123!");
 			bw.MaybeLogOut();
 			Environment.Exit(0);
+			break;
+		case "database":
+			db.MaybeDropDb();
+			db.MaybeCreateDb();
+			break;
+		case "import":
+			db.MaybeImportData();
 			break;
 		default:
 			Console.WriteLine("Unknown module selected.");

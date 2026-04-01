@@ -21,8 +21,9 @@ else {
 Import-Module $PSScriptRoot\ClassLoader.psm1
 Import-Classes
 
-# Create instances of the classes we need to use throughout the script
+# Create instances of the classes we need to use throughout the script (except those that can't be created until later)
 $Logger = [PowerPress.Logger]::new()
+$UI = [PowerPress.UserInput]::new()
 $DepsHandler = [PowerPress.Dependencies]::new()
 $CredsHandler = [PowerPress.BitwardenHandler]::new()
 
@@ -110,24 +111,12 @@ if ( [string]::IsNullOrEmpty($productionUrl)) {
 }
 $Logger.DisplaySectionFooter()
 
+
 $Logger.DisplaySectionHeader("Database")
 $dbHost = Prompt-For-Text -Message "Enter local database hostname" -DefaultValue "127.0.0.1"
 $dbPort = Prompt-For-Text -Message "Enter local database server port" -DefaultValue "3309"
 $dbUser = Prompt-For-Text -Message "Enter local database username" -DefaultValue "root"
 $dbPass = Prompt-For-Text -Message "Enter local database password" -DefaultValue ""
-
-$importDbChoice = Prompt-For-YesOrNo `
-    -Message "Do you want to import an existing database from a .sql file?" `
-    -YesOption "Yes, I want to import from an existing site" `
-    -NoOption "No, this is a new site install" `
-    -DefaultYes $false
-$willImportExistingDb = $importDbChoice -eq $true
-if ($willImportExistingDb) {
-	$Logger.SuccessMessage("You will be prompted for the path to your SQL file later in the script");
-}
-else {
-	$Logger.SuccessMessage("A new database will be created");
-}
 
 # Save config as a global object so it can be easily passed around to different functions in modules called after its creation
 $global:SiteConfig = [LocalSiteConfig]::new(
@@ -140,33 +129,49 @@ $global:SiteConfig = [LocalSiteConfig]::new(
 	$dbPass
 )
 
+$willImportExistingDb = $UI.PromptForYesOrNo(
+	"Do you want to import an existing database from a SQL file?",
+	"Yes, I want to import an existing database",
+	"No, set up as a new install",
+	$false
+);
+
 if (-not $willImportExistingDb) {
 	$defaultAdminEmail = "leesa@doubleedesign.com.au"
 	$AdminEmail = Prompt-For-Text "Enter the admin email for this site" -DefaultValue $defaultAdminEmail
-	$global:SiteConfig.AddWordPressAdmin($AdminEmail);
+	$global:SiteConfig.AddWordPressAdmin($AdminEmail)
 }
 
 # Output all the config values for info and debugging
 $Logger.InfoMessage("`nFinal configuration:");
-Display-Json-Table -JsonString $global:SiteConfig.GetJsonString()
+$Logger.DisplayJsonTable($global:SiteConfig.GetJsonString())
 if ($willImportExistingDb) {
-	$Logger.WarningMessage("The site name will be overridden by your database import");
+	$Logger.WarningMessage("The site name will be overridden by your database import")
 }
+
+# Handle database creation if required
+$DbHandler = [PowerPress.DatabaseHandler]::new($global:SiteConfig)
+$dbExists = $DbHandler.DbExists()
+if ($DbHandler.DbExists() -eq $true) {
+	$DbHandler.MaybeDropDb()
+	$dropped = $DbHandler.DbExists()
+	if ($dropped -eq $true) {
+		$DbHandler.MaybeCreateDb()
+	}
+}
+else {
+	$DbHandler.MaybeCreateDb()
+}
+$Logger.DisplaySectionFooter()
+
 
 # Import the modules that will use the config, 
 # with -Force to ensure changes are reflected if re-running in the same PowerShell session during development
-Import-Module $PSScriptRoot\DatabaseHandler.psm1  -WarningAction SilentlyContinue -Force
 Import-Module $PSScriptRoot\ComposerHandler.psm1  -WarningAction SilentlyContinue -Force
 Import-Module $PSScriptRoot\CanvasRepoHandler.psm1  -WarningAction SilentlyContinue -Force
 Import-Module $PSScriptRoot\WordPressHandler.psm1  -WarningAction SilentlyContinue -Force
 Import-Module $PSScriptRoot\PhpStormConfigHandler.psm1  -WarningAction SilentlyContinue -Force
 
-# Handle database creation if required
-# Note: We cannot run Maybe-Import-Database yet because that uses some wp-cli commands which are not available until after WP core is added.
-# I just like to run these fairly early so we catch MySQL errors before downloading any code.
-Maybe-Drop-Existing-Database
-Create-Database-If-Not-Exists
-$Logger.DisplaySectionFooter()
 
 $Logger.DisplaySectionHeader("Installation")
 # Initialise WordPress site foundation from template repo and update Composer and WordPress config
@@ -212,6 +217,8 @@ if ($willImportExistingDb) {
 else {
 	Run-WordPress-Installation
 }
+
+# TODO find-and-replace of the site URL using WP-CLI
 
 Run-Postinstall-Cleanup
 $Logger.DisplaySectionFooter()
