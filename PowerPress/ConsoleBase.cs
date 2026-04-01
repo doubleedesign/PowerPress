@@ -1,15 +1,17 @@
-using System.Reflection;
-using System.Text;
-
-namespace PowerPress;
-
+﻿// ReSharper disable once RedundantNullableDirective
 // ReSharper disable RedundantUsingDirective
+
+#nullable enable
 using System;
 using System.Diagnostics;
 using System.Collections.Generic;
 using System.Linq;
 using System.IO;
+using System.Reflection;
+using System.Text;
 using FormattedMessage = (string Message, string Caller);
+
+namespace PowerPress;
 
 public abstract class ConsoleBase {
 	private static readonly HashSet<string> ExcludedFrames = new(StringComparer.OrdinalIgnoreCase) {

@@ -1,4 +1,12 @@
-﻿namespace PowerPress;
+﻿// ReSharper disable once RedundantNullableDirective
+// ReSharper disable RedundantUsingDirective
+
+#nullable enable
+using System;
+using System.Collections.Generic;
+using System.Linq;
+
+namespace PowerPress;
 
 public class Dependencies {
 	private readonly Logger logger = new();
@@ -16,12 +24,7 @@ public class Dependencies {
 	}
 
 	private bool CheckPowerShellVersion() {
-		Version? version = this.ps.GetVersion();
-
-		if (version == null) {
-			this.logger.ErrorMessage("Error determining PowerShell version.");
-			return false;
-		}
+		Version version = this.ps.GetVersion();
 
 		if (version.Major < 7) {
 			this.logger.ErrorMessage(

@@ -1,4 +1,4 @@
-param(
+﻿param(
 	[string]$SiteName,
 	[switch]$Debug,
 	[switch]$Dev,
@@ -17,28 +17,9 @@ else {
 	Write-Host "✔  .NET version is $dotnet" -ForegroundColor Green
 }
 
-# Load C# classes if they haven't already been loaded in this session
-$classFiles = @('ConsoleBase', 'Logger', 'UserInput', 'Dependencies', 'LocalSiteConfig', 'BitwardenHandler') | ForEach-Object {
-	Join-Path $PSScriptRoot ".\$_.cs"
-}
-$allLoaded = @('PowerPress.ConsoleBase', 'PowerPress.Logger', 'PowerPress.UserInput', 'PowerPress.Dependencies', 'PowerPress.LocalSiteConfig', 'PowerPress.BitwardenHandler') |
-	ForEach-Object { ([System.Management.Automation.PSTypeName]$_).Type } |
-	Where-Object { $_ -ne $null }
-
-if ($allLoaded.Count -lt 4) {
-	try {
-		# Load them all at once so inheritance works - otherwise classes can't "see" their parent
-		Add-Type -Path $classFiles
-		Write-Host "✔  Loaded all classes" -ForegroundColor Green
-	}
-	catch {
-		Write-Host "✖  $( $_.Exception.Message )" -ForegroundColor Red
-		if ($_.Exception.InnerException) {
-			Write-Host "   $( $_.Exception.InnerException.Message )" -ForegroundColor Red
-		}
-		exit 1
-	}
-}
+# Load C# classes
+Import-Module $PSScriptRoot\ClassLoader.psm1
+Import-Classes
 
 # Create instances of the classes we need to use throughout the script
 $Logger = [PowerPress.Logger]::new()

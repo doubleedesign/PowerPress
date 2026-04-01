@@ -1,5 +1,12 @@
-﻿using System.Collections.ObjectModel;
+﻿// ReSharper disable once RedundantNullableDirective
+// ReSharper disable RedundantUsingDirective
+
+#nullable enable
+using System;
+using System.Collections.Generic;
+using System.Collections.ObjectModel;
 using System.Management.Automation;
+using System.Linq;
 
 namespace PowerPress;
 
@@ -17,8 +24,15 @@ public class PowerShellBridge {
 		return result[0].ToString();
 	}
 
-	public Version? GetVersion() {
-		return typeof(PowerShell).Assembly.GetName().Version;
+	public Version GetVersion() {
+		CommandResult result = this.RunCommand("pwsh", ["-v"]);
+
+		this.ps.Commands.Clear();
+		this.ps.Streams.Error.Clear();
+
+		string trimmed = result.Output.First().Replace("PowerShell", "").Trim();
+
+		return Version.Parse(trimmed);
 	}
 
 	/// <summary>

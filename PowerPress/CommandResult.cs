@@ -1,3 +1,6 @@
 ﻿namespace PowerPress;
 
-public record CommandResult(bool Success, IReadOnlyList<string> Output);
+// ReSharper disable RedundantUsingDirective
+using System.Collections.Generic;
+
+public record CommandResult(bool Success, List<string> Output);
