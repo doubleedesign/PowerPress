@@ -1,12 +1,14 @@
-﻿function Update-WpConfig {
+﻿$Logger = [PowerPress.Logger]::new()
+
+function Update-WpConfig {
 	$wpConfigPath = Join-Path $global:SiteConfig.WpDir "wp-config.php"
 
 	if (-not (Test-Path $wpConfigPath)) {
-		ErrorMessage "wp-config.php not found. Expected path: $wpConfigPath"
+		$Logger.ErrorMessage("wp-config.php not found. Expected path: $wpConfigPath");
 		exit 1
 	}
-	
-	InfoMessage "Updating wp-config.php: $wpConfigPath"
+
+	$Logger.InfoMessage("Updating wp-config.php: $wpConfigPath");
 	$content = Get-Content $wpConfigPath
 	$dbName = $global:SiteConfig.DbName
 
@@ -20,21 +22,21 @@
 function Run-WordPress-Installation {
 	$wpDir = $global:SiteConfig.WpDir
 	Set-Location $wpDir
-	
-	DebugMessage "Working from $(Get-Location)"
-	InfoMessage "Installing WordPress database tables"
-	
+
+	$Logger.DebugMessage("Working from $( Get-Location )");
+	$Logger.InfoMessage("Installing WordPress database tables");
+
 	if (-not (Test-Path "wp-config.php")) {
-		ErrorMessage "wp-config.php not found in $wpDir. Cannot proceed with WordPress installation."
+		$Logger.ErrorMessage("wp-config.php not found in $wpDir. Cannot proceed with WordPress installation.");
 		exit 1
 	}
-	
+
 	try {
-		$siteUrl = "$($global:SiteConfig.SiteUrl)"
-		$siteName = "$($global:SiteConfig.SiteName)"
-		$adminUser = $global:SiteConfig.AdminUser
-		$adminPassword = "$($global:SiteConfig.AdminPassword)" 
-		$adminEmail = "$($global:SiteConfig.AdminEmail)"
+		$siteUrl = "$( $global:SiteConfig.SiteUrl )"
+		$siteName = "$( $global: SiteConfig.SiteName )"
+		$adminUser = $global: SiteConfig.AdminUser
+		$adminPassword = "$( $global:SiteConfig.AdminPassword )"
+		$adminEmail = "$( $global: SiteConfig.AdminEmail )"
 		$command = @(
 			"core",
 			"install",
@@ -54,7 +56,7 @@ function Run-WordPress-Installation {
 		# When running WP-CLI using Git for Windows's shell interpreter, it causes the rewrite to have /C:/Program%20Files/Git/ in it
 		$permalinkSetting = Run-Wp-Cli-Command-With-Custom-Output -command "option get permalink_structure"
 		if ($permalinkSetting -ne "/%postname%/") {
-			WarningMessage "Permalink structure is not set correctly, attempting to set it another way"
+			$Logger.WarningMessage("Permalink structure is not set correctly, attempting to set it another way");
 			Run-Wp-Cli-Command-With-Custom-Output -command "option update permalink_structure '/%postname%/'"
 			Write-Host "Permalink structure is now: " -NoNewline -ForegroundColor Blue
 			Run-Wp-Cli-Command-With-Custom-Output -command "option get permalink_structure"
@@ -65,8 +67,8 @@ function Run-WordPress-Installation {
 		Run-Wp-Cli-Command-With-Custom-Output -command "rewrite flush"
 	}
 	catch {
-		ErrorMessage "Error installing WordPress"
-		ErrorMessage $_
+		$Logger.ErrorMessage("Error installing WordPress");
+		$Logger.ErrorMessage($_);
 	}
 }
 
@@ -90,25 +92,25 @@ function Copy-Plugin-From-Local-Path {
 	param (
 		[string]$sourcePath
 	)
-	
+
 	if (-not (Test-Path $sourcePath)) {
-		WarningMessage "Source plugin path not found: $sourcePath, skipping"
+		$Logger.WarningMessage("Source plugin path not found: $sourcePath, skipping");
 	}
-	
-	$destPath = Join-Path $global:SiteConfig.WpDir "wp-content\plugins\$(Split-Path $sourcePath -Leaf)"
+
+	$destPath = Join-Path $global:SiteConfig.WpDir "wp-content\plugins\$( Split-Path $sourcePath -Leaf )"
 	if (Test-Path $destPath) {
-		InfoMessage "Plugin already exists in destination $destPath, skipping copy"
+		$Logger.InfoMessage("Plugin already exists in destination $destPath, skipping copy");
 		return
 	}
-	
+
 	try {
 		robocopy $sourcePath $destPath /E /Z /NFL /NDL /NJH /nc /ns /np | Out-Null
 		if (Test-Path $destPath) {
-			SuccessMessage "Copied plugin from $sourcePath `n   to $destPath"
+			$Logger.SuccessMessage("Copied plugin from $sourcePath `n   to $destPath");
 		}
 	}
 	catch {
-		ErrorMessage "Failed to copy plugin: $_"
+		$Logger.ErrorMessage("Failed to copy plugin: $_");
 	}
 }
 
@@ -116,25 +118,25 @@ function Copy-Theme-From-Local-Path {
 	param (
 		[string]$sourcePath
 	)
-	
+
 	if (-not (Test-Path $sourcePath)) {
-		WarningMessage "Source theme path not found: $sourcePath, skipping"
+		$Logger.WarningMessage("Source theme path not found: $sourcePath, skipping");
 	}
-	
-	$destPath = Join-Path $global:SiteConfig.WpDir "wp-content\themes\$(Split-Path $sourcePath -Leaf)"
+
+	$destPath = Join-Path $global:SiteConfig.WpDir "wp-content\themes\$( Split-Path $sourcePath -Leaf )"
 	if (Test-Path $destPath) {
-		InfoMessage "Theme already exists in destination $destPath, skipping copy"
+		$Logger.InfoMessage("Theme already exists in destination $destPath, skipping copy");
 		return
 	}
-	
+
 	try {
 		robocopy $sourcePath $destPath /E /Z /NFL /NDL /NJH /nc /ns /np | Out-Null
 		if (Test-Path $destPath) {
-			SuccessMessage "Copied theme from $sourcePath to $destPath"
+			$Logger.SuccessMessage("Copied theme from $sourcePath to $destPath");
 		}
 	}
 	catch {
-		ErrorMessage "Failed to copy theme: $_"
+		$Logger.ErrorMessage("Failed to copy theme: $_");
 	}
 }
 
@@ -142,27 +144,27 @@ function Copy-Uploads-Directory-From-Local-Path {
 	param (
 		[string]$sourcePath
 	)
-	
+
 	if (-not (Test-Path $sourcePath)) {
-		WarningMessage "Source uploads path not found: $sourcePath, skipping"
+		$Logger.WarningMessage("Source uploads path not found: $sourcePath, skipping");
 	}
-	
+
 	$destPath = Join-Path $global:SiteConfig.WpDir "wp-content\uploads"
 	try {
 		robocopy $sourcePath $destPath /E /Z /NFL /NDL /NJH /nc /ns /np | Out-Null
 		if (Test-Path $destPath) {
-			SuccessMessage "Copied uploads from $sourcePath to $destPath"
+			$Logger.SuccessMessage("Copied uploads from $sourcePath to $destPath");
 		}
 	}
 	catch {
-		ErrorMessage "Failed to copy uploads: $_"
+		$Logger.ErrorMessage("Failed to copy uploads: $_");
 	}
 }
 
 function Create-And-Activate-Child-Theme {
 	$wpDir = $global:SiteConfig.WpDir
 	Set-Location $wpDir
-	
+
 	$defaultAuthorName = "Double-E Design"
 	$defaultAuthorUri = "https://www.doubleedesign.com.au"
 	$authorName = Prompt-For-Text -Message "Enter the author name for the child theme" -DefaultValue $defaultAuthorName
@@ -170,8 +172,8 @@ function Create-And-Activate-Child-Theme {
 	$siteName = $global:SiteConfig.SiteName
 	$themeDirectoryName = $global:SiteConfig.SiteSlug
 	$themeUri = $global:SiteConfig.ProductionUrl
-	
-	InfoMessage "Child theme configuration:"
+
+	$Logger.InfoMessage("Child theme configuration:");
 	$themeConfig = @{
 		"Name" = $siteName
 		"Template" = "comet-canvas-blocks"
@@ -180,8 +182,8 @@ function Create-And-Activate-Child-Theme {
 		"Theme URI" = $themeUri
 	}
 	$themeConfigJson = $themeConfig | ConvertTo-Json -Depth 3
-	Display-Json-Table -JsonString $themeConfigJson
-	
+	$Logger.DisplayJsonTable($themeConfigJson);
+
 	try {
 		$command = @(
 			"scaffold",
@@ -198,8 +200,8 @@ function Create-And-Activate-Child-Theme {
 		Run-Wp-Cli-Command-With-Custom-Output -command $command
 	}
 	catch {
-		ErrorMessage "Failed to create and/or activate child theme"
-		ErrorMessage $_
+		$Logger.ErrorMessage("Failed to create and/or activate child theme");
+		$Logger.ErrorMessage($_);
 	}
 }
 
@@ -212,11 +214,13 @@ function Run-Wp-Cli-Command-With-Custom-Output {
 	Set-Location $wpDir
 
 	# Normalize to array and add flags we always want to use
-	if ($command -is [string]) { $command = $command -split '\s+' }
+	if ($command -is [string]) {
+		$command = $command -split '\s+'
+	}
 	$command += @("--skip-plugins", "--skip-themes")
 
-	DebugMessage -Message "Running WP-CLI command: wp $command"
-	
+	$Logger.DebugMessage("Running WP-CLI command: wp $command");
+
 	try {
 		& wp @command 2>&1 | ForEach-Object {
 			$output = "$_"
@@ -227,17 +231,17 @@ function Run-Wp-Cli-Command-With-Custom-Output {
 				# do nothing, each individual plugin gets its own so I don't want "1 of 1" success message directly after it
 			}
 			elseif ($output -match "^Success") {
-				SuccessMessage $output.Replace("Success: ", "")
+				$Logger.SuccessMessage( $output.Replace("Success: ", ""));
 			}
 			elseif ($output -match "^Plugin '.*' activated.$") {
-				SuccessMessage $output
+				$Logger.SuccessMessage($output);
 			}
 			elseif ($output -match "^Error|^Fatal") {
-				ErrorMessage $output.Replace("Error: ", "")
-			} 
+				$Logger.ErrorMessage( $output.Replace("Error: ", ""));
+			}
 			elseif ($output -match "^Warning") {
-				WarningMessage $output.Replace("Warning: ", "")
-			} 
+				$Logger.WarningMessage( $output.Replace("Warning: ", ""));
+			}
 			elseif ($output -match "^Comet Components core config:") {
 				# Suppress
 			}
@@ -250,8 +254,8 @@ function Run-Wp-Cli-Command-With-Custom-Output {
 		}
 	}
 	catch {
-		ErrorMessage "WP-CLI command failed: wp $command"
-		ErrorMessage $_
+		$Logger.ErrorMessage("WP-CLI command failed: wp $command");
+		$Logger.ErrorMessage($_);
 	}
 }
 

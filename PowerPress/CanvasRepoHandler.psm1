@@ -1,25 +1,25 @@
 ﻿function Initialise-From-Template-Repo {
 	# Check that directory exists
 	if (-not (Test-Path $global:SiteConfig.SiteDir)) {
-		ErrorMessage "Site directory does not exist: $($global:SiteConfig.SiteDir)"
+		$Logger.ErrorMessage("Site directory does not exist: $( $global: SiteConfig.SiteDir )");
 		exit 1
 	}
 
 	# Move to it
 	Set-Location $global:SiteConfig.SiteDir
 	$location = Get-Location
-	DebugMessage "Working from $location"
+	$Logger.DebugMessage("Working from $location");
 
 	# Clone template repo into the site directory (Note: the dot clones the contents directly in, so we don't get a wordpress-canvas folder inside the project folder)
-	InfoMessage "Cloning template repository from GitHub"
+	$Logger.InfoMessage("Cloning template repository from GitHub");
 	git clone https://github.com/doubleedesign/wordpress-canvas .
-	
+
 	# Confirm successful clone
 	if (Test-Path (Join-Path $global:SiteConfig.SiteDir ".git")) {
-		SuccessMessage "Successfully cloned template repository into site directory"
+		$Logger.SuccessMessage("Successfully cloned template repository into site directory");
 	}
 	else {
-		ErrorMessage "Failed to clone template repository into site directory"
+		$Logger.ErrorMessage("Failed to clone template repository into site directory");
 		exit 1
 	}
 
@@ -36,7 +36,7 @@ function Maybe-Remove-Plugin {
 		[string]$ifInstalled,
 		[string]$thenRemove
 	)
-	
+
 	$pluginPath1 = Join-Path $global:SiteConfig.WpDir "wp-content\plugins\$ifInstalled"
 	$pluginPath2 = Join-Path $global:SiteConfig.WpDir "wp-content\plugins\$thenRemove"
 	if ((Test-Path $pluginPath1) -and (Test-Path $pluginPath2)) {

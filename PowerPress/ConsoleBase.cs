@@ -1,4 +1,4 @@
-﻿using System.Reflection;
+using System.Reflection;
 using System.Text;
 
 namespace PowerPress;
@@ -24,7 +24,8 @@ public abstract class ConsoleBase {
 		"DebugMessage",
 		"PromptForText",
 		"PromptForYesOrNo",
-		"PromptForSelection"
+		"PromptForSelection",
+		"DisplayJsonTable"
 	};
 
 	protected ConsoleBase() {
