@@ -42,6 +42,7 @@ if ($allLoaded.Count -lt 4) {
 
 
 $Logger = [PowerPress.Logger]::new()
+$DepsHandler = [PowerPress.Dependencies]::new()
 
 # Initial module imports that don't rely on config being set up yet and need to be used before that
 # Note: -Force is just to ensure the latest is loaded, so if the script is re-run in the same PowerShell session during development it picks up changes
@@ -52,7 +53,7 @@ Import-Module $PSScriptRoot\CredentialHandler.psm1  -WarningAction SilentlyConti
 
 # Make sure site name was provided and show help if not
 if ($Help -or [string]::IsNullOrEmpty($SiteName)) {
-	Display-Section-Header -Title "PowerPress Help"
+	$Logger.DisplaySectionHeader("PowerPress Help")
 	Write-Host "Usage:" -ForegroundColor Cyan
 	Write-Host "`tpowerpress site-name" -ForegroundColor Gray
 	Write-Host "`nArguments:" -ForegroundColor Cyan
@@ -61,23 +62,23 @@ if ($Help -or [string]::IsNullOrEmpty($SiteName)) {
 	Write-Host "`t-Debug `t`t PowerPress debug mode. Additional debug information will be displayed during setup." -ForegroundColor Gray
 	Write-Host "`t-Dev `t`t Double-E Design developer mode. PowerPress will use composer.dev.json from the Canvas repo and `n`t`t`t Composer will symlink local copies of Double-E Design packages instead of downloading them from Packagist or GitHub. `n`t`t`t Intended for for developing and testing changes to those packages." -ForegroundColor Gray
 	Write-Host ""
-	Display-Section-Footer
+	$Logger.DisplaySectionFooter()
 	exit 0
 }
 
 # If the -Debug flag is set, set the environment variable
 if ($Debug) {
 	$env:POWERPRESS_DEBUG = "1"
-	SuccessMessage "PowerPress Debug mode enabled"
+	$Logger.SuccessMessage("PowerPress Debug mode enabled")
 }
 
 # If the -Dev flag is set, set the environment variable
 if ($Dev) {
 	$env:POWERPRESS_DEV = "1"
-	SuccessMessage "Dev mode enabled for site setup"
+	$Logger.SuccessMessage("Dev mode enabled for site setup")
 }
 
-Display-Section-Header -Title "Welcome to PowerPress"
+$Logger.DisplaySectionHeader("Welcome to PowerPress")
 Write-Host "PowerPress is a PowerShell utility to set up Composer-managed WordPress sites `nfor local development on Windows machines." -ForegroundColor Gray
 Write-Host "`nOut of the box, it can be used for new sites or for updating existing sites to `nuse Double-E Design's current and tooling and base suite of plugins." -ForegroundColor Gray
 Write-Host "`nPowerPress is open source. You can find the latest documentation, report issues, `ncontribute fixes and improvements, and/or fork the repo to modify it to suit your needs." -ForegroundColor Gray
@@ -86,13 +87,12 @@ Write-Host "`nPress 'Enter' to start." -ForegroundColor Cyan
 do {
 	$key = [Console]::ReadKey("noecho")
 } while ($key.Key -ne "Enter")
-Display-Section-Footer
+$Logger.DisplaySectionFooter()
 
 # Check dependencies and PHP extensions before doing anything else
-Display-Section-Header -Title "Prerequisites"
-Check-Permissions
-Check-Dependencies
-Check-Php-Extensions
+$Logger.DisplaySectionHeader("Prerequisites")
+$DepsHandler.CheckDependencies()
+$DepsHandler.CheckPermissions()
 
 $env:PHP_CLI_OPTS = "-d display_errors=0 -d error_reporting=0"
 WarningMessage "PHP errors and warnings have been suppressed in the PHP_CLI_OPTS environment variable."
@@ -101,7 +101,7 @@ WarningMessage "Individual commands may not be affected by this due to how they 
 # BitWarden CLI is treated a little differently than other dependencies because we need to check env variables as well as the command,
 # and it makes sense to log in at the same time to avoid checking "can access Bitwarden" multiple times
 $useBitwarden = Maybe-Log-Into-Bitwarden
-Display-Section-Footer
+$Logger.DisplaySectionFooter()
 
 # Store location the script was called from
 $scriptLocation = Get-Location
