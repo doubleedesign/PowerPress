@@ -3,6 +3,8 @@ using System.Reflection;
 using PowerPress;
 
 UserInput ui = new();
+Logger logger = new();
+
 string action = ui.PromptForSelection(
 	"Select an action:",
 	new Dictionary<string, string> {
@@ -15,16 +17,33 @@ if (action == "test") {
 	string module = ui.PromptForSelection(
 		"Select a module to run:",
 		new Dictionary<string, string> {
-			["Check dependencies"] = "check-deps",
-			["Check Bitwarden status"] = "bitwarden"
+			["Check dependencies"] = "deps",
+			["Check Bitwarden access"] = "bitwarden-access",
+			["Test saving credentials in Bitwarden"] = "bitwarden-save"
 		}
 	);
 
+	Dependencies deps = new();
+	BitwardenHandler bw = new();
+
 	switch (module) {
-		case "check-deps":
-			Dependencies deps = new();
+		case "deps":
 			deps.CheckPermissions();
 			deps.CheckDependencies();
+			Environment.Exit(0);
+			break;
+		case "bitwarden-access":
+			logger.InfoMessage("Testing Bitwarden login flow");
+			bw.MaybeLogIn();
+			logger.InfoMessage("Testing Bitwarden logout flow");
+			bw.MaybeLogOut();
+			Environment.Exit(0);
+			break;
+		case "bitwarden-save":
+			bw.MaybeLogIn();
+			bw.MaybeSaveCredentials("example.com", "https://example.com", "admin", "password123!");
+			bw.MaybeLogOut();
+			Environment.Exit(0);
 			break;
 		default:
 			Console.WriteLine("Unknown module selected.");

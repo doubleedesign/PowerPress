@@ -43,13 +43,13 @@ if ($allLoaded.Count -lt 4) {
 
 $Logger = [PowerPress.Logger]::new()
 $DepsHandler = [PowerPress.Dependencies]::new()
+$CredsHandler = [PowerPress.BitwardenHandler]::new()
 
 # Initial module imports that don't rely on config being set up yet and need to be used before that
 # Note: -Force is just to ensure the latest is loaded, so if the script is re-run in the same PowerShell session during development it picks up changes
 Import-Module $PSScriptRoot\Console.psm1 -WarningAction SilentlyContinue -Force
 Import-Module $PSScriptRoot\Dependencies.psm1 -WarningAction SilentlyContinue -Force
 Import-Module $PSScriptRoot\FileHandler.psm1 -WarningAction SilentlyContinue -Force
-Import-Module $PSScriptRoot\CredentialHandler.psm1  -WarningAction SilentlyContinue -Force
 
 # Make sure site name was provided and show help if not
 if ($Help -or [string]::IsNullOrEmpty($SiteName)) {
@@ -100,7 +100,7 @@ WarningMessage "Individual commands may not be affected by this due to how they 
 
 # BitWarden CLI is treated a little differently than other dependencies because we need to check env variables as well as the command,
 # and it makes sense to log in at the same time to avoid checking "can access Bitwarden" multiple times
-$useBitwarden = Maybe-Log-Into-Bitwarden
+$useBitwarden = $CredsHandler.MaybeLogIn()
 $Logger.DisplaySectionFooter()
 
 # Store location the script was called from
@@ -414,7 +414,7 @@ $siteUrl = $global:SiteConfig.SiteUrl
 Write-Host "Admin URL: $siteUrl/wp-admin" -ForegroundColor Cyan
 $credentialsSaved = $False
 if (-not $willImportExistingDb -and $useBitwarden) {
-	$credentialsSaved = Maybe-Save-Credentials
+	$credentialsSaved = $CredsHandler.MaybeSaveCredentials($global:SiteConfig:SiteName,$global:SiteConfig:SiteUrl,$global:SiteConfig.AdminUser,$global:SiteConfig.AdminPassword);
 }
 
 Write-Host "You might still need to:" -ForegroundColor Cyan
@@ -458,5 +458,5 @@ catch {
 }
 
 # Cleanup
-Maybe-Log-Out-Of-Bitwarden
+$CredsHandler.MaybeLogOut()
 Set-Location $scriptLocation
