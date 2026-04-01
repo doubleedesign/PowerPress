@@ -13,34 +13,34 @@ public class Logger : ConsoleBase {
 	private const int DividerWidth = 100;
 
 	public void SuccessMessage(string message, int traceLevels = 1) {
-		var (msg, caller) = FormatWithCaller(message, traceLevels);
-		Write("✔  ", ConsoleColor.Green);
-		Write($"{msg} ", ConsoleColor.Green);
-		Write(caller, ConsoleColor.DarkGray);
+		(string msg, string caller) = this.FormatWithCaller(message, traceLevels);
+		this.Write("✔  ", ConsoleColor.Green);
+		this.Write($"{msg} ", ConsoleColor.Green);
+		this.Write(caller, ConsoleColor.DarkGray);
 		Console.WriteLine();
 	}
 
 	public void WarningMessage(string message, int traceLevels = 1) {
-		var (msg, caller) = FormatWithCaller(message, traceLevels);
-		Write("⚠️ ", ConsoleColor.Yellow);
-		Write($"{msg} ", ConsoleColor.Yellow);
-		Write(caller, ConsoleColor.DarkGray);
+		(string msg, string caller) = this.FormatWithCaller(message, traceLevels);
+		this.Write("⚠️ ", ConsoleColor.Yellow);
+		this.Write($"{msg} ", ConsoleColor.Yellow);
+		this.Write(caller, ConsoleColor.DarkGray);
 		Console.WriteLine();
 	}
 
 	public void ErrorMessage(string message, int traceLevels = 1) {
-		var (msg, caller) = FormatWithCaller(message, traceLevels);
-		Write("✖  ", ConsoleColor.Red);
-		Write($"{msg} ", ConsoleColor.Red);
-		Write(caller, ConsoleColor.DarkGray);
+		(string msg, string caller) = this.FormatWithCaller(message, traceLevels);
+		this.Write("✖  ", ConsoleColor.Red);
+		this.Write($"{msg} ", ConsoleColor.Red);
+		this.Write(caller, ConsoleColor.DarkGray);
 		Console.WriteLine();
 	}
 
 	public void InfoMessage(string message, int traceLevels = 1) {
-		var (msg, caller) = FormatWithCaller(message, traceLevels);
-		Write("📝 ", ConsoleColor.Blue);
-		Write($"{msg} ", ConsoleColor.Blue);
-		Write(caller, ConsoleColor.DarkGray);
+		(string msg, string caller) = this.FormatWithCaller(message, traceLevels);
+		this.Write("📝 ", ConsoleColor.Blue);
+		this.Write($"{msg} ", ConsoleColor.Blue);
+		this.Write(caller, ConsoleColor.DarkGray);
 		Console.WriteLine();
 	}
 
@@ -52,10 +52,10 @@ public class Logger : ConsoleBase {
 			return;
 		}
 
-		var (msg, caller) = FormatWithCaller($"[DEBUG] {message}", traceLevels);
-		Write("🐞 ", ConsoleColor.White);
-		Write($"{msg} ", ConsoleColor.White);
-		Write(caller, ConsoleColor.DarkGray);
+		(string msg, string caller) = this.FormatWithCaller($"[DEBUG] {message}", traceLevels);
+		this.Write("🐞 ", ConsoleColor.White);
+		this.Write($"{msg} ", ConsoleColor.White);
+		this.Write(caller, ConsoleColor.DarkGray);
 		Console.WriteLine();
 	}
 
@@ -64,27 +64,27 @@ public class Logger : ConsoleBase {
 	/// </summary>
 	public void DisplayJsonTable(string json) {
 		try {
-			using var doc = JsonDocument.Parse(json);
-			foreach (var prop in doc.RootElement.EnumerateObject()) {
-				WriteLine($"{prop.Name}: {prop.Value}", ConsoleColor.Gray);
+			using JsonDocument doc = JsonDocument.Parse(json);
+			foreach (JsonProperty prop in doc.RootElement.EnumerateObject()) {
+				this.WriteLine($"{prop.Name}: {prop.Value}", ConsoleColor.Gray);
 			}
 		}
 		catch {
-			ErrorMessage("Failed to parse JSON", 2);
+			this.ErrorMessage("Failed to parse JSON", 2);
 		}
 	}
 
 	public void DisplaySectionHeader(string title) {
-		var trimmed = title.Trim();
-		var totalPadding = DividerWidth - trimmed.Length - 2;
-		var leftPadding = (int)Math.Floor(totalPadding / 2.0);
-		var rightPadding = (int)Math.Ceiling(totalPadding / 2.0);
+		string trimmed = title.Trim();
+		int totalPadding = DividerWidth - trimmed.Length - 2;
+		int leftPadding = (int)Math.Floor(totalPadding / 2.0);
+		int rightPadding = (int)Math.Ceiling(totalPadding / 2.0);
 
-		var output = new string('=', leftPadding) + $" {trimmed} " + new string('=', rightPadding);
-		WriteLine($"{output}", ConsoleColor.Magenta);
+		string output = new string('=', leftPadding) + $" {trimmed} " + new string('=', rightPadding);
+		this.WriteLine($"{output}", ConsoleColor.Magenta);
 	}
 
 	public void DisplaySectionFooter() {
-		WriteLine(new string('=', DividerWidth) + "\n", ConsoleColor.Magenta);
+		this.WriteLine(new string('=', DividerWidth) + "\n", ConsoleColor.Magenta);
 	}
 }

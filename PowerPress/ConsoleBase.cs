@@ -1,4 +1,5 @@
-﻿using System.Text;
+﻿using System.Reflection;
+using System.Text;
 
 namespace PowerPress;
 
@@ -31,51 +32,57 @@ public abstract class ConsoleBase {
 	}
 
 	protected void Write(string text, ConsoleColor colour) {
-		var original = Console.ForegroundColor;
+		ConsoleColor original = Console.ForegroundColor;
 		Console.ForegroundColor = colour;
 		Console.Write(text);
 		Console.ForegroundColor = original;
 	}
 
 	protected void WriteLine(string text, ConsoleColor colour) {
-		var original = Console.ForegroundColor;
+		ConsoleColor original = Console.ForegroundColor;
 		Console.ForegroundColor = colour;
 		Console.WriteLine(text);
 		Console.ForegroundColor = original;
 	}
 
 	protected FormattedMessage FormatWithCaller(string message, int traceLevels = 1) {
-		var lineWidth = Console.IsOutputRedirected ? 120 : Console.WindowWidth;
+		int minWidth = 120;
+		int maxWidth = 200;
+		int windowWidth = Console.WindowWidth;
+		int maybeWidth = Math.Max(windowWidth, minWidth);
+		int lineWidth = Console.IsOutputRedirected
+			? minWidth
+			: Math.Min(maybeWidth, maxWidth);
 
-		var callers = GetCallingFunctionNames(traceLevels);
-		var caller = string.Concat(callers.Select(c => $"[{c}]"));
+		List<string> callers = this.GetCallingFunctionNames(traceLevels);
+		string caller = string.Concat(callers.Select(c => $"[{c}]"));
 
 		// If the combined line would wrap, push caller to the next line right-aligned
 		if (message.Length + caller.Length + 6 > lineWidth) {
-			var rightAligned = caller.PadLeft(Math.Max(caller.Length, lineWidth - 6));
+			string rightAligned = caller.PadLeft(Math.Max(caller.Length, lineWidth - 6));
 			return (message.Trim(), $"\n{rightAligned}");
 		}
 
-		var paddedMessage = message.Trim().PadRight(lineWidth - caller.Length - 6);
+		string paddedMessage = message.Trim().PadRight(lineWidth - caller.Length - 6);
 		return (paddedMessage, caller);
 	}
 
 	private List<string> GetCallingFunctionNames(int traceLevels) {
-		var result = new List<string>();
-		var count = 0;
+		List<string> result = new();
+		int count = 0;
 
 		// Skip frames 0 (this method) and 1 (FormatWithCaller / the public logger method)
-		var frames = new StackTrace(true).GetFrames() ?? Array.Empty<StackFrame>();
+		StackFrame[] frames = new StackTrace(true).GetFrames() ?? Array.Empty<StackFrame>();
 
-		foreach (var frame in frames.Skip(2)) {
-			var method = frame.GetMethod();
+		foreach (StackFrame frame in frames.Skip(2)) {
+			MethodBase? method = frame.GetMethod();
 			if (method == null) continue;
 
-			var name = method.Name;
+			string name = method.Name;
 			if (ExcludedFrames.Contains(name)) continue;
 
 			// Include line number when the entry point is the top-level script
-			var fileName = frame.GetFileName();
+			string? fileName = frame.GetFileName();
 			if (!string.IsNullOrEmpty(fileName) &&
 			    fileName.EndsWith(".ps1", StringComparison.OrdinalIgnoreCase)) {
 				result.Add($"{Path.GetFileName(fileName)}:{frame.GetFileLineNumber()}");
