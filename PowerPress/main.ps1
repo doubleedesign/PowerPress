@@ -18,10 +18,10 @@ else {
 }
 
 # Load C# classes if they haven't already been loaded in this session
-$classFiles = @('ConsoleBase', 'Logger', 'UserInput', 'LocalSiteConfig') | ForEach-Object {
+$classFiles = @('ConsoleBase', 'Logger', 'UserInput', 'Dependencies', 'LocalSiteConfig', 'BitwardenHandler') | ForEach-Object {
 	Join-Path $PSScriptRoot ".\$_.cs"
 }
-$allLoaded = @('PowerPress.ConsoleBase', 'PowerPress.Logger', 'PowerPress.UserInput', 'PowerPress.LocalSiteConfig') |
+$allLoaded = @('PowerPress.ConsoleBase', 'PowerPress.Logger', 'PowerPress.UserInput', 'PowerPress.Dependencies', 'PowerPress.LocalSiteConfig', 'PowerPress.BitwardenHandler') |
 	ForEach-Object { ([System.Management.Automation.PSTypeName]$_).Type } |
 	Where-Object { $_ -ne $null }
 
@@ -40,7 +40,7 @@ if ($allLoaded.Count -lt 4) {
 	}
 }
 
-
+# Create instances of the classes we need to use throughout the script
 $Logger = [PowerPress.Logger]::new()
 $DepsHandler = [PowerPress.Dependencies]::new()
 $CredsHandler = [PowerPress.BitwardenHandler]::new()
@@ -48,7 +48,6 @@ $CredsHandler = [PowerPress.BitwardenHandler]::new()
 # Initial module imports that don't rely on config being set up yet and need to be used before that
 # Note: -Force is just to ensure the latest is loaded, so if the script is re-run in the same PowerShell session during development it picks up changes
 Import-Module $PSScriptRoot\Console.psm1 -WarningAction SilentlyContinue -Force
-Import-Module $PSScriptRoot\Dependencies.psm1 -WarningAction SilentlyContinue -Force
 Import-Module $PSScriptRoot\FileHandler.psm1 -WarningAction SilentlyContinue -Force
 
 # Make sure site name was provided and show help if not
