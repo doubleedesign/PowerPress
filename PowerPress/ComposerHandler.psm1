@@ -1,25 +1,5 @@
 ﻿$Logger = [PowerPress.Logger]::new();
 
-function Remove-Dep-From-ComposerJson {
-	param (
-		[string]$composerJsonPath,
-		[string]$packageName
-	)
-
-	if (Test-Path $composerJsonPath) {
-		$Logger.InfoMessage("Updating composer.json to remove $folderToRemove");
-		# Read and parse the JSON file
-		$json = Get-Content $composerJsonPath | ConvertFrom-Json
-		# Remove from require section
-		$json.require.Remove("doubleedesign/$folderToRemove")
-		# Remove from repositories section
-		$json.repositories = $json.repositories | Where-Object { $_.url -notlike "*$folderToRemove*" }
-		# Convert back to JSON and save
-		$json | ConvertTo-Json -Depth 10 | Set-Content "$composerJsonPath"
-		$Logger.SuccessMessage("Removed $folderToRemove from composer.json");
-	}
-}
-
 function Run-Composer-Command-With-Custom-Output-Handling {
 	param (
 		[string]$command
@@ -96,5 +76,4 @@ function Run-Composer-Install {
 	}
 }
 
-Export-ModuleMember -Function Remove-Dep-From-ComposerJson
 Export-ModuleMember -Function Run-Composer-Command-With-Custom-Output-Handling, Run-Composer-Install, Run-Composer-Install-For-Plugin
