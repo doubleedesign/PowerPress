@@ -168,17 +168,9 @@ $Logger.DisplaySectionFooter()
 
 
 # =============================================================================================================== #
-# Import the modules that will use the config, 
-# with -Force to ensure changes are reflected if re-running in the same PowerShell session during development
-Import-Module $PSScriptRoot\ComposerHandler.psm1  -WarningAction SilentlyContinue -Force
-Import-Module $PSScriptRoot\CanvasRepoHandler.psm1  -WarningAction SilentlyContinue -Force
-Import-Module $PSScriptRoot\WordPressHandler.psm1  -WarningAction SilentlyContinue -Force
-Import-Module $PSScriptRoot\PhpStormConfigHandler.psm1  -WarningAction SilentlyContinue -Force
-# =============================================================================================================== #
-
-
-# =============================================================================================================== #
 $Logger.DisplaySectionHeader("Installation")
+# Instantiate the classes that we need for these steps
+$WpHandler = [PowerPress.WordPressHandler]::new($global:SiteConfig)
 $Composer = [PowerPress.ComposerHandler]::new($global:SiteConfig)
 $Canvas = [PowerPress.CanvasRepo]::new($global:SiteConfig)
 # Initialise WordPress site foundation from template repo and update Composer and WordPress config
@@ -276,7 +268,7 @@ $folderMap = @{
 }
 foreach ($triggerFolder in $folderMap.Keys) {
 	foreach ($conflictingFolder in $folderMap[$triggerFolder]) {
-		Maybe-Remove-Plugin -ifInstalled $triggerFolder -thenRemove $conflictingFolder
+		$WpHandler.MaybeRemovePlugin($triggerFolder, $conflictingFolder);
 	}
 }
 
