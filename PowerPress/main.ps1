@@ -202,7 +202,7 @@ Run-Composer-Install
 # Import existing database
 if ($willImportExistingDb) {
 	try {
-		Maybe-Import-Database
+		$DbHandler.MaybeImportDb()
 		wp rewrite flush
 	}
 	catch {
