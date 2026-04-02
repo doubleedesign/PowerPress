@@ -37,12 +37,21 @@ Import-Classes
 # Store location the script was called from
 $scriptLocation = Get-Location
 
-# Create instances of the classes we need to use throughout the script that do not need the local site config passed in at construction
-$Logger = [PowerPress.Logger]::new()
-$UI = [PowerPress.UserInput]::new()
-$DepsHandler = [PowerPress.Dependencies]::new()
-$CredsHandler = [PowerPress.BitwardenHandler]::new()
-$FileHandler = [PowerPress.FileHandler]::new()
+try {
+	# Create instances of the classes we need to use throughout the script that do not need the local site config passed in at construction
+	$Logger = [PowerPress.Logger]::new()
+	$UI = [PowerPress.UserInput]::new()
+	$DepsHandler = [PowerPress.Dependencies]::new()
+	$CredsHandler = [PowerPress.BitwardenHandler]::new()
+	$FileHandler = [PowerPress.FileHandler]::new()
+}
+catch {
+	Write-Host "✖  Failed to initialise PowerPress classes: $( $_.Exception.Message )" -ForegroundColor Red
+	if ($_.Exception.InnerException) {
+		Write-Host "   $( $_.Exception.InnerException.Message )" -ForegroundColor Red
+	}
+	exit 1
+}
 
 # Make sure site name was provided and show help if not
 if ($Help -or [string]::IsNullOrEmpty($SiteName)) {

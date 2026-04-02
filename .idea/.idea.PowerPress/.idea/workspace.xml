@@ -90,7 +90,7 @@
     "ignore.virus.scanning.warn.message": "true",
     "junie.onboarding.icon.badge.shown": "true",
     "rider.code.cleanup.on.save": "true",
-    "settings.editor.selected.configurable": "CodeInspectionSettingsId",
+    "settings.editor.selected.configurable": "configurable.group.build",
     "to.speed.mode.migration.done": "true"
   }
 }]]></component>
@@ -133,7 +133,7 @@
       <workItem from="1775023229541" duration="359000" />
       <workItem from="1775027174964" duration="11808000" />
       <workItem from="1775085384392" duration="16150000" />
-      <workItem from="1775114095729" duration="6199000" />
+      <workItem from="1775114095729" duration="7540000" />
     </task>
     <servers />
   </component>
