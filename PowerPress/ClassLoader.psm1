@@ -1,4 +1,4 @@
-﻿function Import-Classes {
+function Import-Classes {
 	$projectFile = Join-Path $PSScriptRoot "PowerPress.csproj"
 
 	try {
