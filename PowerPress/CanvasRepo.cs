@@ -9,7 +9,8 @@ public class CanvasRepo {
 
 	public CanvasRepo(LocalSiteConfig config) {
 		this.config = config;
-		this.fileHandler = new FileHandler(config);
+		this.fileHandler = new FileHandler();
+		this.fileHandler.SetConfig(config);
 	}
 
 	public void Init() {

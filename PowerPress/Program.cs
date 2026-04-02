@@ -1,4 +1,4 @@
-﻿using System.Diagnostics;
+using System.Diagnostics;
 using System.Reflection;
 using PowerPress;
 
@@ -30,7 +30,8 @@ if (action == "test") {
 	BitwardenHandler bw = new();
 	LocalSiteConfig testSiteConfig = new("test-site", "C:/temp/test-site", "https://example.com");
 	DatabaseHandler db = new(testSiteConfig);
-	FileHandler fh = new(testSiteConfig);
+	FileHandler fh = new();
+	fh.SetConfig(testSiteConfig);
 
 	switch (module) {
 		case "deps":
