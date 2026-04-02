@@ -62,45 +62,36 @@ public class FileHandler {
 	public void UpdateProjectReadme() {
 		if (this.config.SiteDir is null) {
 			this.logger.WarningMessage("Could not update README because the site directory is not set");
+			return;
 		}
 
-		string readmeFile = Path.Combine(this.config.SiteDir, "README.md");
-		string projectTemplate = Path.Combine(this.config.SiteDir, "README-project.md");
-
 		// Delete the original README.md
+		string readmeFile = Path.Combine(this.config.SiteDir, "README.md");
 		if (File.Exists(readmeFile)) {
 			File.Delete(readmeFile);
 		}
 
-		if (File.Exists(projectTemplate)) {
-			try {
-				string siteName = this.config.SiteName ?? "";
-				string fileContent = File.ReadAllText(projectTemplate);
-				fileContent = fileContent.Replace("My Project Name", siteName);
-				fileContent = fileContent.Replace("[Client Name]", siteName);
-				File.WriteAllText(projectTemplate, fileContent);
-				// TODO: Add a check to verify the content was actually updated
-				this.logger.SuccessMessage("Updated README-project.md with project name");
-			}
-			catch (Exception e) {
-				this.logger.ErrorMessage("Failed to update README-project.md");
-				this.logger.ErrorMessage(e.Message);
-			}
-
-			try {
-				File.Move(projectTemplate, readmeFile);
-				// TODO: Add a check to verify
-				this.logger.SuccessMessage("Updated README.md with project template");
-			}
-			catch (Exception e) {
-				this.logger.ErrorMessage("Failed to save new README.md from template");
-				this.logger.ErrorMessage(e.Message);
-			}
+		try {
+			this.FindAndReplaceText("README-project.md", "My Project Name", this.config.SiteName ?? "");
+			this.FindAndReplaceText("README-project.md", "[Client Name]", this.config.SiteName ?? "");
+			// TODO: Add a check to verify the content was actually updated
+			this.logger.SuccessMessage("Updated README-project.md with project name");
 		}
-	}
+		catch (Exception e) {
+			this.logger.ErrorMessage("Failed to update README-project.md");
+			this.logger.ErrorMessage(e.Message);
+		}
 
-	private bool FolderExistsNonEmpty(string path) {
-		return Directory.Exists(path) && Directory.EnumerateFileSystemEntries(path).Any();
+		try {
+			string projectTemplate = Path.Combine(this.config.SiteDir, "README-project.md");
+			File.Move(projectTemplate, readmeFile);
+			// TODO: Add a check to verify
+			this.logger.SuccessMessage("Updated README.md with project template");
+		}
+		catch (Exception e) {
+			this.logger.ErrorMessage("Failed to save new README.md from template");
+			this.logger.ErrorMessage(e.Message);
+		}
 	}
 
 	public void MoveToRecycleBin(string path) {
@@ -112,5 +103,26 @@ public class FileHandler {
 		}
 
 		FileSystem.DeleteDirectory(path, UIOption.OnlyErrorDialogs, RecycleOption.SendToRecycleBin);
+	}
+
+	/// <summary>
+	///     Find and replace text in a file.
+	/// </summary>
+	/// <param name="path">The path to the file from the site root</param>
+	/// <param name="search">The value to search for</param>
+	/// <param name="replace">The value to replace it with</param>
+	public void FindAndReplaceText(string path, string search, string replace) {
+		if (this.config.SiteDir is null) {
+			this.logger.ErrorMessage("Cannot update file because SiteDir is not set in config");
+		}
+
+		string content = File.ReadAllText(path);
+		content = content.Replace(search, replace);
+
+		File.WriteAllText(path, content);
+	}
+
+	private bool FolderExistsNonEmpty(string path) {
+		return Directory.Exists(path) && Directory.EnumerateFileSystemEntries(path).Any();
 	}
 }
