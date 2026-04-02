@@ -21,7 +21,8 @@ if (action == "test") {
 			["Check Bitwarden access"] = "bitwarden-access",
 			["Test saving credentials in Bitwarden"] = "bitwarden-save",
 			["Create an empty database"] = "database",
-			["Import a database"] = "import"
+			["Import a database"] = "import",
+			["Test folder creation and deletion"] = "folders"
 		}
 	);
 
@@ -29,6 +30,7 @@ if (action == "test") {
 	BitwardenHandler bw = new();
 	LocalSiteConfig testSiteConfig = new("test-site", "C:/temp/test-site", "https://example.com");
 	DatabaseHandler db = new(testSiteConfig);
+	FileHandler fh = new(testSiteConfig);
 
 	switch (module) {
 		case "deps":
@@ -55,6 +57,22 @@ if (action == "test") {
 			break;
 		case "import":
 			db.MaybeImportData();
+			break;
+		case "folders":
+			fh.MaybeCreateFolder("C:/temp/powerpress-temp");
+			// Test creation again to see what happens when it exists but is empty
+			fh.MaybeCreateFolder("C:/temp/powerpress-temp");
+			// Put an empty text file in it
+			File.WriteAllText("C:/temp/powerpress-temp/test.txt", "This is a test file.");
+			// Test the response to creation request 
+			fh.MaybeCreateFolder("C:/temp/powerpress-temp");
+			// Then test deletion with prompt
+			fh.MaybeDeleteFolder("C:/temp/powerpress-temp", "Do you want to delete the test folder?");
+			// Check if it worked
+			if (!Directory.Exists("C:/temp/powerpress-temp")) {
+				logger.SuccessMessage("Test folder was successfully deleted.");
+			}
+
 			break;
 		default:
 			Console.WriteLine("Unknown module selected.");

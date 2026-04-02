@@ -160,7 +160,7 @@ function Run-Composer-Install {
 
 	if ($LastExitCode -ne 0) {
 		$Logger.ErrorMessage("Composer install failed");
-		Definitely-Delete-Folder -folderPath $global: SiteConfig.SiteDir
+		$FileHandler.MaybeDeleteFolder($global:SiteConfig.SiteDir)
 		exit 1
 	}
 }

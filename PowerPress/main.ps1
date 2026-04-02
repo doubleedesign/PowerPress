@@ -1,10 +1,11 @@
-﻿param(
+param(
 	[string]$SiteName,
 	[switch]$Debug,
 	[switch]$Dev,
 	[switch]$Help
 )
 
+# =============================================================================================================== #
 $dotnet = Get-Command dotnet | Select-Object -ExpandProperty Version
 $versionNumber = [int]$dotnet.Major
 if ($versionNumber -lt 10) {
@@ -17,17 +18,19 @@ else {
 	Write-Host "✔  .NET version is $dotnet" -ForegroundColor Green
 }
 
-# Load C# classes
+# Load compiled C# classes
 Import-Module $PSScriptRoot\ClassLoader.psm1
 Import-Classes
+
+# Store location the script was called from
+$scriptLocation = Get-Location
 
 # Create instances of the classes we need to use throughout the script (except those that can't be created until later)
 $Logger = [PowerPress.Logger]::new()
 $UI = [PowerPress.UserInput]::new()
 $DepsHandler = [PowerPress.Dependencies]::new()
 $CredsHandler = [PowerPress.BitwardenHandler]::new()
-
-Import-Module $PSScriptRoot\FileHandler.psm1 -WarningAction SilentlyContinue -Force
+$FileHandler = [PowerPress.FileHandler]::new()
 
 # Make sure site name was provided and show help if not
 if ($Help -or [string]::IsNullOrEmpty($SiteName)) {
@@ -56,6 +59,8 @@ if ($Dev) {
 	$Logger.SuccessMessage("Dev mode enabled for site setup");
 }
 
+
+# =============================================================================================================== #
 $Logger.DisplaySectionHeader("Welcome to PowerPress")
 Write-Host "PowerPress is a PowerShell utility to set up Composer-managed WordPress sites `nfor local development on Windows machines." -ForegroundColor Gray
 Write-Host "`nOut of the box, it can be used for new sites or for updating existing sites to `nuse Double-E Design's current and tooling and base suite of plugins." -ForegroundColor Gray
@@ -77,46 +82,39 @@ $DepsHandler.CheckPermissions()
 $useBitwarden = $CredsHandler.MaybeLogIn()
 $Logger.DisplaySectionFooter()
 
-# Store location the script was called from
-$scriptLocation = Get-Location
 
-# Get basic config to enable setup
+# =============================================================================================================== #
 $Logger.DisplaySectionHeader("Base Config");
 $username = $env:USERNAME
 $defaultProjectsDir = "C:\Users\$username\ClientSites"
-$PROJECTS_DIR = Prompt-For-Text -Message "Enter the path to your website projects directory" -DefaultValue $defaultProjectsDir
-if ( [string]::IsNullOrEmpty($PROJECTS_DIR)) {
-	$PROJECTS_DIR = $defaultProjectsDir
-}
+$PROJECTS_DIR = $UI.PromptForText("Enter the path to your website projects directory", $defaultProjectsDir)
 $Logger.InfoMessage("Using projects directory: $PROJECTS_DIR");
 $SiteDir = Join-Path $PROJECTS_DIR $SiteName
 $Logger.InfoMessage("Site directory will be: $SiteDir");
 
 # If directory exists, prompt to delete or exit
-$continue = Maybe-Delete-Folder -folderPath $SiteDir -promptMessage "Directory $SiteDir already exists. Do you want to delete it and start fresh?"
+$continue = $FileHandler.MaybeDeleteFolder($SiteDir, "Directory $SiteDir already exists. Do you want to delete it and start fresh?")
 if (-not $continue) {
 	$Logger.WarningMessage("Cannot initialise new site because there is an existing directory at $SiteDir.");
 	$Logger.WarningMessage("Exiting script.");
 	exit 0
 }
-$continue = Create-Folder -folderPath $SiteDir
+$continue = $FileHandler.MaybeCreateFolder($SiteDir)
 if (-not $continue) {
 	$Logger.ErrorMessage("Failed to create site directory. Exiting script.");
 	exit 1
 }
 
-$ProductionUrl = Prompt-For-Text -Message "Enter the production URL for this site (without https://)"
-if ( [string]::IsNullOrEmpty($productionUrl)) {
-	$ProductionUrl = ""
-}
+$ProductionUrl = $UI.PromptForText("Enter the production URL for this site (without https://)", "")
 $Logger.DisplaySectionFooter()
 
 
+# =============================================================================================================== #
 $Logger.DisplaySectionHeader("Database")
-$dbHost = Prompt-For-Text -Message "Enter local database hostname" -DefaultValue "127.0.0.1"
-$dbPort = Prompt-For-Text -Message "Enter local database server port" -DefaultValue "3309"
-$dbUser = Prompt-For-Text -Message "Enter local database username" -DefaultValue "root"
-$dbPass = Prompt-For-Text -Message "Enter local database password" -DefaultValue ""
+$dbHost = $UI.PromptForText("Enter local database hostname", "127.0.0.1")
+$dbPort = $UI.PromptForText("Enter local database server port", "3309")
+$dbUser = $UI.PromptForText("Enter local database username", "root")
+$dbPass = $UI.PromptForText("Enter local database password", "")
 
 # Save config as a global object so it can be easily passed around to different functions in modules called after its creation
 $global:SiteConfig = [LocalSiteConfig]::new(
@@ -138,7 +136,7 @@ $willImportExistingDb = $UI.PromptForYesOrNo(
 
 if (-not $willImportExistingDb) {
 	$defaultAdminEmail = "leesa@doubleedesign.com.au"
-	$AdminEmail = Prompt-For-Text "Enter the admin email for this site" -DefaultValue $defaultAdminEmail
+	$AdminEmail = $UI.PromptForText("Enter the admin email for this site", $defaultAdminEmail)
 	$global:SiteConfig.AddWordPressAdmin($AdminEmail)
 }
 
@@ -165,14 +163,17 @@ else {
 $Logger.DisplaySectionFooter()
 
 
+# =============================================================================================================== #
 # Import the modules that will use the config, 
 # with -Force to ensure changes are reflected if re-running in the same PowerShell session during development
 Import-Module $PSScriptRoot\ComposerHandler.psm1  -WarningAction SilentlyContinue -Force
 Import-Module $PSScriptRoot\CanvasRepoHandler.psm1  -WarningAction SilentlyContinue -Force
 Import-Module $PSScriptRoot\WordPressHandler.psm1  -WarningAction SilentlyContinue -Force
 Import-Module $PSScriptRoot\PhpStormConfigHandler.psm1  -WarningAction SilentlyContinue -Force
+# =============================================================================================================== #
 
 
+# =============================================================================================================== #
 $Logger.DisplaySectionHeader("Installation")
 # Initialise WordPress site foundation from template repo and update Composer and WordPress config
 Initialise-From-Template-Repo
@@ -185,10 +186,7 @@ if ($willUseDevComposerJson) {
 	$Logger.InfoMessage("Running setup in dev mode. composer.dev.json and local copies of Double-E Design packages will be used where applicable.");
 	Composer-Json-Initial-Update -composerJsonPath (Join-Path $global:SiteConfig.WpDir "composer.dev.json")
 	$pathToLocalPackages = "C:\Users\$username\PhpStormProjects"
-	$LOCAL_PACKAGES_DIR = Prompt-For-Text -Message "Enter the path to your local packages directory for Comet Components, Double-E Base Plugin, etc." -DefaultValue $pathToLocalPackages
-	if ( [string]::IsNullOrEmpty($LOCAL_PACKAGES_DIR)) {
-		$LOCAL_PACKAGES_DIR = $pathToLocalPackages
-	}
+	$LOCAL_PACKAGES_DIR = $UI.PromptForText("Enter the path to your local packages directory for Comet Components, Double-E Base Plugin, etc.", $pathToLocalPackages)
 	$Logger.InfoMessage("Using local packages directory: $LOCAL_PACKAGES_DIR");
 	Composer-Json-Repositories-Update -composerJsonPath (Join-Path $global:SiteConfig.WpDir "composer.dev.json") -pathToLocalPackages $LOCAL_PACKAGES_DIR
 	$env:COMPOSER = "composer.dev.json";
@@ -223,24 +221,24 @@ else {
 Run-Postinstall-Cleanup
 $Logger.DisplaySectionFooter()
 
+
+# =============================================================================================================== #
 $Logger.DisplaySectionHeader("Plugins, Themes, and Uploads")
 # Add ACF Pro
 $defaultAcfProPath = "C:\Users\$username\PhpStormProjects\advanced-custom-fields-pro"
-$acfProPath = Prompt-For-Text -Message "`Enter the path to your local copy of the Advanced Custom Fields Pro plugin" -DefaultValue $defaultAcfProPath
-if ( [string]::IsNullOrEmpty($acfProPath)) {
-	$acfProPath = $defaultAcfProPath
-}
+$acfProPath = $UI.PromptForText("Enter the path to your local copy of the Advanced Custom Fields Pro plugin", $defaultAcfProPath)
 Copy-Plugin-From-Local-Path -sourcePath $acfProPath
 
 # Optionally import wp-content from an existing backup
-$importContentChoice = `Prompt-For-YesOrNo `
-	-Message "Do you want to import plugins, themes, and uploads from an existing wp-content folder?" `
-	-YesOption "Yes, I want to import wp-content from an existing site backup" `
-	-NoOption "No, this is a new site install" `
-	-DefaultYes $false
+$importContentChoice = $UI.PromptForYesOrNo(
+	"Do you want to import plugins, themes, and uploads from an existing wp-content folder?",
+	"Yes, I want to import wp-content from an existing site backup",
+	"No, this is a new site install",
+	$false
+);
 $importingWpContent = $importContentChoice -eq $true
 if ($importingWpContent) {
-	$pathToContent = Prompt-For-Text -Message "Enter the full path to the wp-content folder you want to import from: "
+	$pathToContent = $UI.PromptForText("Enter the full path to the wp-content folder you want to import from: ")
 	$pathToContent = $pathToContent.Trim('"')
 	if (-not (Test-Path $pathToContent)) {
 		$Logger.WarningMessage("Path not found: $pathToContent. Skipping wp-content import.");
@@ -335,7 +333,7 @@ foreach ($plugin in $plugins) {
 
 $defaultAcfProKey = [Environment]::GetEnvironmentVariable("ACF_PRO_KEY", "User")
 if ( [string]::IsNullOrEmpty($defaultAcfProKey)) {
-	$acfProKey = Prompt-For-Text -Message "Enter your ACF Pro Developer licence key"
+	$acfProKey = $UI.PromptForText("Enter your ACF Pro Developer licence key")
 }
 else {
 	$acfProKey = $defaultAcfProKey
@@ -365,15 +363,21 @@ if ($ninjaFormsActive) {
 }
 $Logger.DisplaySectionFooter()
 
+
+# =============================================================================================================== #
 $Logger.DisplaySectionHeader("IDE and Deployment")
 Update-PhpStorm-Workspace-Config
 Maybe-Update-PhpStorm-Deployment-Config
 $Logger.DisplaySectionFooter()
 
+
+# =============================================================================================================== #
 $Logger.DisplaySectionHeader("Documentation")
-Update-Project-Readme # FIXME the find-and-replace isn't working
+$FileHandler.UpdateProjectReadme()
 $Logger.DisplaySectionFooter()
 
+
+# =============================================================================================================== #
 $Logger.DisplaySectionHeader("Local web server")
 $Logger.InfoMessage("Registering site in Laravel Herd");
 Set-Location $global:SiteConfig.WpDir
@@ -382,6 +386,8 @@ herd link $SiteSlug
 herd secure $SiteSlug
 $Logger.DisplaySectionFooter()
 
+
+# =============================================================================================================== #
 $Logger.DisplaySectionHeader("Version control")
 Set-Location $SiteDir
 git init
@@ -389,6 +395,8 @@ git add .
 git commit -m "Set up site from WordPress Canvas template using PowerPress"
 $Logger.DisplaySectionFooter()
 
+
+# =============================================================================================================== #
 Write-Host "`n ============================ Setup Complete ================================" -ForegroundColor Green
 $siteUrl = $global:SiteConfig.SiteUrl
 Write-Host "Admin URL: $siteUrl/wp-admin" -ForegroundColor Cyan

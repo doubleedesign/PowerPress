@@ -76,7 +76,7 @@ function Run-Postinstall-Cleanup {
 	# Go into the themes directory and delete default themes (anything starting with twenty*)
 	$themesDir = Join-Path $global:SiteConfig.WpDir "wp-content\themes"
 	Get-ChildItem -Path $themesDir -Directory -Filter "twenty*" | ForEach-Object {
-		Remove-With-Wait -path $_.FullName
+		$FileHandler.MaybeDeleteFolder($_.FullName)
 	}
 
 	# Go into the plugins directory and delete Akismet and Hello Dolly (if they exist)
@@ -84,7 +84,7 @@ function Run-Postinstall-Cleanup {
 	$defaultPlugins = @("akismet", "hello.php")
 	foreach ($plugin in $defaultPlugins) {
 		$pluginPath = Join-Path $pluginsDir $plugin
-		Remove-With-Wait -path $pluginPath
+		$FileHandler.MaybeDeleteFolder($pluginPath)
 	}
 }
 
