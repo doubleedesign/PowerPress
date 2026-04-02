@@ -1,12 +1,4 @@
-﻿// ReSharper disable once RedundantNullableDirective
-// ReSharper disable RedundantUsingDirective
-
-#nullable enable
-using System;
-using System.Diagnostics;
-using System.Collections.Generic;
-using System.Linq;
-using System.IO;
+﻿using System.Diagnostics;
 using System.Reflection;
 using System.Text;
 using FormattedMessage = (string Message, string Caller);

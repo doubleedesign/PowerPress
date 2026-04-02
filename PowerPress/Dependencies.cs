@@ -1,12 +1,4 @@
-﻿// ReSharper disable once RedundantNullableDirective
-// ReSharper disable RedundantUsingDirective
-
-#nullable enable
-using System;
-using System.Collections.Generic;
-using System.Linq;
-
-namespace PowerPress;
+﻿namespace PowerPress;
 
 public class Dependencies {
 	private readonly Logger logger = new();

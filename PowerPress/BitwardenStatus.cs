@@ -1,9 +1,4 @@
-﻿// ReSharper disable once RedundantNullableDirective
-// ReSharper disable RedundantUsingDirective
-
-#nullable enable
-using System;
-using System.Text.Json.Serialization;
+﻿using System.Text.Json.Serialization;
 
 namespace PowerPress;
 

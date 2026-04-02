@@ -1,15 +1,4 @@
-﻿// ReSharper disable once RedundantNullableDirective
-// ReSharper disable RedundantUsingDirective
-
-#nullable enable
-using System;
-using System.Diagnostics;
-using System.Collections.Generic;
-using System.Linq;
-using System.IO;
-using System.Text.Json;
-
-namespace PowerPress;
+﻿namespace PowerPress;
 
 public class UserInput : ConsoleBase {
 	/// <summary>

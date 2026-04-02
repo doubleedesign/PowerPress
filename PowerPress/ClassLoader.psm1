@@ -1,15 +1,18 @@
 ﻿function Import-Classes {
-	# Get all files in the current directory that match the class file pattern
-	$classFiles = Get-ChildItem -Path $PSScriptRoot -Filter "*.cs" -File | Select-Object -ExpandProperty FullName
-
-	# Filter out certain files
-	$exclude = @("Program.cs")
-	$classFiles = $classFiles | Where-Object { $exclude -notcontains (Split-Path $_ -Leaf) }
+	$projectFile = Join-Path $PSScriptRoot "PowerPress.csproj"
 
 	try {
-		# Load them all at once so inheritance works - otherwise classes can't "see" their parent
-		Add-Type -Path $classFiles
-		Write-Host "✔  Loaded all classes" -ForegroundColor Green
+		dotnet build $projectFile
+		if ($LASTEXITCODE -ne 0) {
+			throw "dotnet build failed with exit code $LASTEXITCODE"
+		}
+
+		$dll = Get-ChildItem -Path (Join-Path $PSScriptRoot "bin\Debug") -Recurse -Filter "PowerPress.dll" | Select-Object -First 1
+		if ($null -eq $dll) {
+			throw "Could not find PowerPress.dll after build"
+		}
+
+		Add-Type -Path $dll.FullName
 	}
 	catch {
 		Write-Host "✖  $( $_.Exception.Message )" -ForegroundColor Red

@@ -11,7 +11,7 @@
 
 ### .NET version problems
 
-Note that the .NET version installed in Rider has no bearing on the system-wide version that an independent PowerShell terminal will use.
+Note that if you have .NET and SDK versions installed by Rider, they may be in different location to the system-wide ones. This means things may work in Rider's integrated terminal (or by running the project as a C# app) but then not work in an independent PowerShell terminal.
 
 You can check if you have .NET 10+ installed system-wide by running the following command in PowerShell:
 
@@ -19,42 +19,18 @@ You can check if you have .NET 10+ installed system-wide by running the followin
 dotnet --info
 ```
 
+Make sure this lists both the runtime and SDK, and that they are version 10+.
+
 If not you can [download the installer](https://dotnet.microsoft.com/en-us/download/dotnet/10.0) or install the latest using Chocolatey:
 
 ```powershell
 choco install dotnet
 ```
-
-### C# compiler errors when running script
-
-#### Errors
-
-> "Name does not exist in the current context"
-> "Are you missing a using directive or assembly reference?"
-
-Examples:
-```
-error CS0103: The name 'Path' does not exist in the current context
-     | result.Add($"{Path.GetFileName(fileName)}:{frame.GetFileLineNumber()}");
-```
-```
-error CS0246: The type or namespace name 'List<>' could not be found (are you missing a using directive or
-     | an assembly reference?)  private List<string> GetCallingFunctionNames(int traceLevels) {    
+```powershell
+choco install dotnet-sdk
 ```
 
-#### Cause
-PowerShell is loading C# classes using the `Add-Type` cmdlet, which may not have loaded the namespaces that C# usually expects to be available by default (which is why Rider doesn't show any errors when editing the files).
-
-`using` statements for some of these things, like `System.IO` and `System.Collections.Generic`, may be interpreted by Rider as unused or redundant and removed automatically on save, but they are actually required for the script to run. 
-
-#### Solution
-Add this above the directives in the C# class file that's causing the error:
-
-```csharp
-// ReSharper disable RedundantUsingDirective
-```
-
-This will prevent Rider from removing any `using` statements below it.
+If you are still seeing inconsistencies, it could be a simple version difference between Rider and system.
 
 ---
 ## PowerShell

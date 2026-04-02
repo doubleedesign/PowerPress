@@ -17,8 +17,18 @@
       <change beforePath="$PROJECT_DIR$/.idea/.idea.PowerPress/.idea/workspace.xml" beforeDir="false" afterPath="$PROJECT_DIR$/.idea/.idea.PowerPress/.idea/workspace.xml" afterDir="false" />
       <change beforePath="$PROJECT_DIR$/PowerPress.sln.DotSettings.user" beforeDir="false" afterPath="$PROJECT_DIR$/PowerPress.sln.DotSettings.user" afterDir="false" />
       <change beforePath="$PROJECT_DIR$/PowerPress.slnx" beforeDir="false" afterPath="$PROJECT_DIR$/PowerPress.slnx" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/PowerPress/BitwardenHandler.cs" beforeDir="false" afterPath="$PROJECT_DIR$/PowerPress/BitwardenHandler.cs" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/PowerPress/BitwardenStatus.cs" beforeDir="false" afterPath="$PROJECT_DIR$/PowerPress/BitwardenStatus.cs" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/PowerPress/ClassLoader.psm1" beforeDir="false" afterPath="$PROJECT_DIR$/PowerPress/ClassLoader.psm1" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/PowerPress/CommandResult.cs" beforeDir="false" afterPath="$PROJECT_DIR$/PowerPress/CommandResult.cs" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/PowerPress/ConsoleBase.cs" beforeDir="false" afterPath="$PROJECT_DIR$/PowerPress/ConsoleBase.cs" afterDir="false" />
       <change beforePath="$PROJECT_DIR$/PowerPress/DatabaseHandler.cs" beforeDir="false" afterPath="$PROJECT_DIR$/PowerPress/DatabaseHandler.cs" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/PowerPress/PowerPress.csproj" beforeDir="false" afterPath="$PROJECT_DIR$/PowerPress/PowerPress.csproj" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/PowerPress/Dependencies.cs" beforeDir="false" afterPath="$PROJECT_DIR$/PowerPress/Dependencies.cs" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/PowerPress/Logger.cs" beforeDir="false" afterPath="$PROJECT_DIR$/PowerPress/Logger.cs" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/PowerPress/PowerShellBridge.cs" beforeDir="false" afterPath="$PROJECT_DIR$/PowerPress/PowerShellBridge.cs" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/PowerPress/UserInput.cs" beforeDir="false" afterPath="$PROJECT_DIR$/PowerPress/UserInput.cs" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/README.md" beforeDir="false" afterPath="$PROJECT_DIR$/README.md" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/TROUBLESHOOTING.md" beforeDir="false" afterPath="$PROJECT_DIR$/TROUBLESHOOTING.md" afterDir="false" />
     </list>
     <option name="SHOW_DIALOG" value="false" />
     <option name="HIGHLIGHT_CONFLICTS" value="true" />
@@ -38,16 +48,18 @@
     <option name="RECENT_GIT_ROOT_PATH" value="$PROJECT_DIR$" />
   </component>
   <component name="HighlightingSettingsPerFile">
-    <setting file="file://$APPLICATION_CONFIG_DIR$/resharper-host/SourcesCache/65dd1f9da52e89b509975895aa8b501e3d1c428e15c01aaa6cced7f3ac2a60/MySqlConnectionStringBuilder.cs" root0="FORCE_HIGHLIGHTING" />
-    <setting file="file://$APPLICATION_CONFIG_DIR$/resharper-host/SourcesCache/a03dbdcc98d1bbda729a39571247393e51fd3f9a497f8a88f14d6f6a63fe216f/MySqlCommand.cs" root0="SKIP_HIGHLIGHTING" />
-    <setting file="file://$APPLICATION_CONFIG_DIR$/resharper-host/SourcesCache/f7f74dd9d1daa3b0487ffb7cb62b4d05c69c1d5cc8b71a52835bfcf565497/MySqlDataReader.cs" root0="SKIP_HIGHLIGHTING" />
     <setting file="file://$PROJECT_DIR$/PowerPress/DatabaseHandler.cs" root0="FORCE_HIGHLIGHTING" />
     <setting file="file://$PROJECT_DIR$/PowerPress/LocalSiteConfig.cs" root0="FORCE_HIGHLIGHTING" />
     <setting file="file://$PROJECT_DIR$/PowerPress/Logger.cs" root0="FORCE_HIGHLIGHTING" />
     <setting file="file://$PROJECT_DIR$/PowerPress/PowerShellBridge.cs" root0="FORCE_HIGHLIGHTING" />
     <setting file="file://$PROJECT_DIR$/PowerPress/UserInput.cs" root0="FORCE_HIGHLIGHTING" />
+    <setting file="file://$PROJECT_DIR$/PowerPress/obj/Debug/net10.0/PowerPress.sourcelink.json" root0="FORCE_HIGHLIGHTING" />
     <setting file="file://$PROJECT_DIR$/PowerPress/obj/PowerPress.csproj.nuget.dgspec.json" root0="FORCE_HIGHLIGHTING" />
     <setting file="file://$PROJECT_DIR$/PowerPress/obj/project.packagespec.json" root0="FORCE_HIGHLIGHTING" />
+    <setting file="file://$PROJECT_DIR$/PowerPressTests/obj/project.assets.json" root0="FORCE_HIGHLIGHTING" />
+    <setting file="file://$PROJECT_DIR$/PowerPressTests/obj/project.packagespec.json" root0="FORCE_HIGHLIGHTING" />
+    <setting file="file://$APPLICATION_CONFIG_DIR$/resharper-host/SourcesCache/23c728fc44db7fb9ceecaa21c293ddc28df38d0c317c3115e7b284d942fe842/IOException.cs" root0="FORCE_HIGHLIGHTING" />
+    <setting file="file://$APPLICATION_CONFIG_DIR$/resharper-host/SourcesCache/2732d66c405b45d5f571abc2f54458cac1facd4829d999e48b33d25d7866e83/Random.cs" root0="SKIP_HIGHLIGHTING" />
   </component>
   <component name="MetaFilesCheckinStateConfiguration" checkMetaFiles="true" />
   <component name="ProblemsViewState">
@@ -64,7 +76,7 @@
   </component>
   <component name="PropertiesComponent"><![CDATA[{
   "keyToString": {
-    ".NET Project.PowerPress.executor": "Debug",
+    ".NET Project.PowerPress.executor": "Run",
     "ASKED_SHARE_PROJECT_CONFIGURATION_FILES": "true",
     "ModuleVcsDetector.initialDetectionPerformed": "true",
     "RunOnceActivity.ShowReadmeOnStart": "true",
@@ -79,7 +91,7 @@
     "ignore.virus.scanning.warn.message": "true",
     "junie.onboarding.icon.badge.shown": "true",
     "rider.code.cleanup.on.save": "true",
-    "settings.editor.selected.configurable": "preferences.sourceCode.C#",
+    "settings.editor.selected.configurable": "SolutionBuilderGeneralOptionsPage",
     "to.speed.mode.migration.done": "true"
   }
 }]]></component>
@@ -121,6 +133,7 @@
       <workItem from="1773961664755" duration="9708000" />
       <workItem from="1775023229541" duration="359000" />
       <workItem from="1775027174964" duration="11808000" />
+      <workItem from="1775085384392" duration="3507000" />
     </task>
     <servers />
   </component>

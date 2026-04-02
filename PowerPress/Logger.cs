@@ -1,13 +1,6 @@
-﻿namespace PowerPress;
+﻿using System.Text.Json;
 
-// ReSharper disable RedundantUsingDirective
-using System;
-using System.Diagnostics;
-using System.Collections.Generic;
-using System.Linq;
-using System.IO;
-using System.Text.Json;
-using FormattedMessage = (string Message, string Caller);
+namespace PowerPress;
 
 public class Logger : ConsoleBase {
 	private const int DividerWidth = 100;

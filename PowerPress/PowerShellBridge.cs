@@ -1,12 +1,5 @@
-﻿// ReSharper disable once RedundantNullableDirective
-// ReSharper disable RedundantUsingDirective
-
-#nullable enable
-using System;
-using System.Collections.Generic;
-using System.Collections.ObjectModel;
+﻿using System.Collections.ObjectModel;
 using System.Management.Automation;
-using System.Linq;
 
 namespace PowerPress;
 
