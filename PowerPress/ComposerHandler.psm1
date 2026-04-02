@@ -1,74 +1,5 @@
 ﻿$Logger = [PowerPress.Logger]::new();
 
-function Update-Composer-Json {
-	param (
-		[string]$composerJsonPath,
-		[string]$key,
-		[string]$value
-	)
-
-	if (-not (Test-Path $composerJsonPath)) {
-		$Logger.ErrorMessage("File not found. Expected path: $composerJsonPath");
-		exit 1
-	}
-
-	# Read and parse the JSON file
-	$json = Get-Content $composerJsonPath | ConvertFrom-Json
-	$json.$key = $value
-	# Convert back to JSON and save
-	$json | ConvertTo-Json -Depth 10 | Set-Content "$composerJsonPath"
-}
-
-function Composer-Json-Initial-Update {
-	param (
-		[string]$composerJsonPath
-	)
-
-	$composerJsonPath = Join-Path $global:SiteConfig.SiteDir "composer.json"
-	if (-not (Test-Path $composerJsonPath)) {
-		$Logger.ErrorMessage("Composer.json not found. Expected path: $siteDir");
-		exit 1
-	}
-
-	# Save original content in case we need to revert
-	$originalContent = Get-Content $composerJsonPath -Raw
-
-	$Logger.InfoMessage("Updating composer.json: $composerJsonPath");
-	Update-Composer-Json -composerJsonPath $composerJsonPath -key "name" -value "doubleedesign/$( $global:SiteConfig.SiteSlug )"
-	Update-Composer-Json -composerJsonPath $composerJsonPath -key "version" -value "1.0.0"
-	Update-Composer-Json -composerJsonPath $composerJsonPath -key "homepage" -value "https://www.doubleedesign.com.au"
-
-	# Confirm none of the updated keys have empty values
-	$json = Get-Content $composerJsonPath | ConvertFrom-Json
-	if ([string]::IsNullOrEmpty($json.name) -or [string]::IsNullOrEmpty($json.version) -or ($json.name[-1] -eq '/')) {
-		$Logger.ErrorMessage("One or more of the required composer.json keys have empty or invalid values");
-		$Logger.WarningMessage("Reverting composer.json to original content. Please troubleshoot the Update-Composer-Json step before running again.");
-		Set-Content -Path $composerJsonPath -Value $originalContent
-		exit 1
-	}
-}
-
-function Composer-Json-Repositories-Update {
-	param (
-		[string]$composerJsonPath,
-		[string]$pathToLocalPackages
-	)
-
-	foreach ($repo in $json.repositories) {
-		if ($repo.options.symlink -eq $true) {
-			$packageName = $repo.url.Split("/")[-1]
-			if (Test-Path (Join-Path $pathToLocalPackages $packageName)) {
-				$repo.url = Join-Path $pathToLocalPackages $packageName
-			}
-			else {
-				$Logger.WarningMessage("Local package not found for $packageName at expected path: $( Join-Path $pathToLocalPackages $packageName ) `n Skipping composer.json update for $packageName");
-			}
-		}
-	}
-
-	$json | ConvertTo-Json -Depth 10 | Set-Content "$composerJsonPath"
-}
-
 function Remove-Dep-From-ComposerJson {
 	param (
 		[string]$composerJsonPath,
@@ -165,5 +96,5 @@ function Run-Composer-Install {
 	}
 }
 
-Export-ModuleMember -Function Composer-Json-Initial-Update, Composer-Json-Repositories-Update, Remove-Dep-From-ComposerJson
+Export-ModuleMember -Function Remove-Dep-From-ComposerJson
 Export-ModuleMember -Function Run-Composer-Command-With-Custom-Output-Handling, Run-Composer-Install, Run-Composer-Install-For-Plugin

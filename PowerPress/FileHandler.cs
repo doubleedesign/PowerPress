@@ -103,7 +103,7 @@ public class FileHandler {
 		return Directory.Exists(path) && Directory.EnumerateFileSystemEntries(path).Any();
 	}
 
-	private void MoveToRecycleBin(string path) {
+	public void MoveToRecycleBin(string path) {
 		bool isFile = File.Exists(path);
 
 		if (isFile) {

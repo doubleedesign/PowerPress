@@ -175,26 +175,26 @@ Import-Module $PSScriptRoot\PhpStormConfigHandler.psm1  -WarningAction SilentlyC
 
 # =============================================================================================================== #
 $Logger.DisplaySectionHeader("Installation")
+$Composer = [PowerPress.ComposerHandler]::new($global:SiteConfig)
 # Initialise WordPress site foundation from template repo and update Composer and WordPress config
 Initialise-From-Template-Repo
-Composer-Json-Initial-Update -composerJsonPath (Join-Path $global:SiteConfig.WpDir "composer.json")
+$Composer.Init()
 Update-WpConfig
 
 # Determine whether to use composer.dev.json and local packages based on env variable set by the -Dev flag, and make the necessary updates
 $willUseDevComposerJson = $env.POWERPRESS_DEV -eq "1"
 if ($willUseDevComposerJson) {
 	$Logger.InfoMessage("Running setup in dev mode. composer.dev.json and local copies of Double-E Design packages will be used where applicable.");
-	Composer-Json-Initial-Update -composerJsonPath (Join-Path $global:SiteConfig.WpDir "composer.dev.json")
-	$pathToLocalPackages = "C:\Users\$username\PhpStormProjects"
-	$LOCAL_PACKAGES_DIR = $UI.PromptForText("Enter the path to your local packages directory for Comet Components, Double-E Base Plugin, etc.", $pathToLocalPackages)
-	$Logger.InfoMessage("Using local packages directory: $LOCAL_PACKAGES_DIR");
-	Composer-Json-Repositories-Update -composerJsonPath (Join-Path $global:SiteConfig.WpDir "composer.dev.json") -pathToLocalPackages $LOCAL_PACKAGES_DIR
+
+	# Prompt to confirm or change local packages directory, and then update composer.dev.json accordingly
+	$LOCAL_PACKAGES_DIR = $UI.PromptForText("Enter the path to your local packages directory for Comet Components, Double-E Base Plugin, etc.", "C:\Users\$username\PhpStormProjects")
+	$Composer.UpdateDevRepositories($LOCAL_PACKAGES_DIR)
+
+	# Update session env variable so install/update/etc use this file instead of composer.json
 	$env:COMPOSER = "composer.dev.json";
 }
 else {
 	$Logger.InfoMessage("Running setup in standard mode. Double-E Design packages will be downloaded from their published repositories.");
-	$composerJsonDevPath = Join-Path $global:SiteConfig.SiteDir "composer.dev.json"
-	Remove-Item -Path $composerJsonDevPath -Force | Out-Null
 }
 
 Run-Composer-Install
