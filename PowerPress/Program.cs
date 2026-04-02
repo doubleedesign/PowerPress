@@ -1,4 +1,4 @@
-using System.Diagnostics;
+﻿using System.Diagnostics;
 using System.Reflection;
 using PowerPress;
 
@@ -22,7 +22,8 @@ if (action == "test") {
 			["Test saving credentials in Bitwarden"] = "bitwarden-save",
 			["Create an empty database"] = "database",
 			["Import a database"] = "import",
-			["Test folder creation and deletion"] = "folders"
+			["Test folder creation and deletion"] = "folders",
+			["Test WP-CLI"] = "wp"
 		}
 	);
 
@@ -74,6 +75,14 @@ if (action == "test") {
 				logger.SuccessMessage("Test folder was successfully deleted.");
 			}
 
+			break;
+		case "wp":
+			WordPressHandler wp = new(testSiteConfig);
+			fh.MaybeCreateFolder("C:/temp/test-site");
+			fh.MaybeCreateFolder("C:/temp/test-site/app");
+			wp.RunCliCommand("--version"); // Something we expect to work
+			wp.RunCliCommand("plugin activate doublee-breadcrumbs"); // Something we expect to fail (because WP is not installed)
+			Environment.Exit(0);
 			break;
 		default:
 			Console.WriteLine("Unknown module selected.");

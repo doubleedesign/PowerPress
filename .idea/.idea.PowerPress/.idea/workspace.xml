@@ -16,8 +16,11 @@
     <list default="true" id="b7104dd0-933d-420c-984d-6ffaddda2db4" name="Changes" comment="">
       <change beforePath="$PROJECT_DIR$/.idea/.idea.PowerPress/.idea/workspace.xml" beforeDir="false" afterPath="$PROJECT_DIR$/.idea/.idea.PowerPress/.idea/workspace.xml" afterDir="false" />
       <change beforePath="$PROJECT_DIR$/PowerPress.slnx" beforeDir="false" afterPath="$PROJECT_DIR$/PowerPress.slnx" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/PowerPress/ComposerHandler.psm1" beforeDir="false" afterPath="$PROJECT_DIR$/PowerPress/ComposerHandler.psm1" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/PowerPress/UserInput.cs" beforeDir="false" afterPath="$PROJECT_DIR$/PowerPress/UserInput.cs" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/PowerPress/FileHandler.cs" beforeDir="false" afterPath="$PROJECT_DIR$/PowerPress/FileHandler.cs" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/PowerPress/PowerShellBridge.cs" beforeDir="false" afterPath="$PROJECT_DIR$/PowerPress/PowerShellBridge.cs" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/PowerPress/Program.cs" beforeDir="false" afterPath="$PROJECT_DIR$/PowerPress/Program.cs" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/PowerPress/WordPressHandler.cs" beforeDir="false" afterPath="$PROJECT_DIR$/PowerPress/WordPressHandler.cs" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/PowerPress/WordPressHandler.psm1" beforeDir="false" afterPath="$PROJECT_DIR$/PowerPress/WordPressHandler.psm1" afterDir="false" />
       <change beforePath="$PROJECT_DIR$/PowerPress/main.ps1" beforeDir="false" afterPath="$PROJECT_DIR$/PowerPress/main.ps1" afterDir="false" />
     </list>
     <option name="SHOW_DIALOG" value="false" />
@@ -43,8 +46,10 @@
     <setting file="file://$PROJECT_DIR$/PowerPress/FileHandler.cs" root0="FORCE_HIGHLIGHTING" />
     <setting file="file://$PROJECT_DIR$/PowerPress/LocalSiteConfig.cs" root0="FORCE_HIGHLIGHTING" />
     <setting file="file://$PROJECT_DIR$/PowerPress/Logger.cs" root0="FORCE_HIGHLIGHTING" />
+    <setting file="file://$PROJECT_DIR$/PowerPress/PhpStormHandler.cs" root0="FORCE_HIGHLIGHTING" />
     <setting file="file://$PROJECT_DIR$/PowerPress/PowerShellBridge.cs" root0="FORCE_HIGHLIGHTING" />
     <setting file="file://$PROJECT_DIR$/PowerPress/UserInput.cs" root0="FORCE_HIGHLIGHTING" />
+    <setting file="file://$PROJECT_DIR$/PowerPress/WordPressHandler.cs" root0="FORCE_HIGHLIGHTING" />
     <setting file="file://$PROJECT_DIR$/PowerPress/obj/Debug/net10.0/PowerPress.sourcelink.json" root0="FORCE_HIGHLIGHTING" />
     <setting file="file://$PROJECT_DIR$/PowerPress/obj/PowerPress.csproj.nuget.dgspec.json" root0="FORCE_HIGHLIGHTING" />
     <setting file="file://$PROJECT_DIR$/PowerPress/obj/project.packagespec.json" root0="FORCE_HIGHLIGHTING" />
@@ -127,7 +132,7 @@
       <workItem from="1773961664755" duration="9708000" />
       <workItem from="1775023229541" duration="359000" />
       <workItem from="1775027174964" duration="11808000" />
-      <workItem from="1775085384392" duration="7882000" />
+      <workItem from="1775085384392" duration="16150000" />
     </task>
     <servers />
   </component>

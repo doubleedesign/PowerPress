@@ -1,4 +1,5 @@
-﻿using Microsoft.VisualBasic.FileIO;
+﻿using System.Text.RegularExpressions;
+using Microsoft.VisualBasic.FileIO;
 
 namespace PowerPress;
 
@@ -120,6 +121,17 @@ public class FileHandler {
 
 		string content = File.ReadAllText(path);
 		content = content.Replace(search, replace);
+
+		File.WriteAllText(path, content);
+	}
+
+	public void FindAndReplaceRegex(string path, string regex, string replace) {
+		if (this.config.SiteDir is null) {
+			this.logger.ErrorMessage("Cannot update file because SiteDir is not set in config");
+		}
+
+		string content = File.ReadAllText(path);
+		content = Regex.Replace(content, regex, replace);
 
 		File.WriteAllText(path, content);
 	}

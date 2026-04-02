@@ -4,6 +4,7 @@ using System.Management.Automation;
 namespace PowerPress;
 
 public class PowerShellBridge {
+	private readonly Logger logger = new();
 	private readonly PowerShell ps = PowerShell.Create();
 
 	public string? GetExecutionPolicy(string scope) {
@@ -57,6 +58,8 @@ public class PowerShellBridge {
 		foreach (string argument in arguments) {
 			this.ps.AddArgument(argument);
 		}
+
+		this.logger.DebugMessage($"Running command: {command} {string.Join(" ", arguments)}");
 
 		List<string> results = this.ps.Invoke()
 			.Select(r => r.ToString())

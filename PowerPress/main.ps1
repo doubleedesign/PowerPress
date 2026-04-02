@@ -170,13 +170,13 @@ $Logger.DisplaySectionFooter()
 # =============================================================================================================== #
 $Logger.DisplaySectionHeader("Installation")
 # Instantiate the classes that we need for these steps
-$WpHandler = [PowerPress.WordPressHandler]::new($global:SiteConfig)
-$Composer = [PowerPress.ComposerHandler]::new($global:SiteConfig)
 $Canvas = [PowerPress.CanvasRepo]::new($global:SiteConfig)
+$Composer = [PowerPress.ComposerHandler]::new($global:SiteConfig)
+$WpHandler = [PowerPress.WordPressHandler]::new($global:SiteConfig)
 # Initialise WordPress site foundation from template repo and update Composer and WordPress config
 $Canvas.Init()
 $Composer.Init()
-Update-WpConfig
+$WpHandler.UpdateConfig()
 
 # Determine whether to use composer.dev.json and local packages based on env variable set by the -Dev flag, and make the necessary updates
 $willUseDevComposerJson = $env.POWERPRESS_DEV -eq "1"
@@ -200,7 +200,7 @@ Run-Composer-Install
 if ($willImportExistingDb) {
 	try {
 		$DbHandler.MaybeImportDb()
-		wp rewrite flush
+		$WpHandler.RunCliCommand("rewrite flush")
 	}
 	catch {
 		$Logger.ErrorMessage("Failed to import database");
@@ -321,7 +321,7 @@ $Logger.InfoMessage("Activating plugins");
 foreach ($plugin in $plugins) {
 	$pluginPath = Join-Path $global:SiteConfig.WpDir "wp-content\plugins\$plugin"
 	if (Test-Path $pluginPath) {
-		Run-Wp-Cli-Command-With-Custom-Output -command "plugin activate $plugin"
+		$WpHandler.RunCliCommand("plugin activate $plugin")
 	}
 	else {
 		$Logger.WarningMessage("Plugin $plugin not found in expected path $pluginPath. Skipping activation.");
@@ -338,25 +338,25 @@ else {
 	$Logger.InfoMessage("This is assumed to be a key for a lifetime developer licence. If it isn't, just go and resave it in the admin after setup is complete.");
 }
 $tomorrow = [DateTimeOffset]::new((Get-Date).AddDays(1).ToUniversalTime()).ToUnixTimeSeconds()
-Run-Wp-Cli-Command-With-Custom-Output -command "option update acf_pro_license '$acfProKey'"
+$WpHandler.RunCliCommand("option update acf_pro_license '$acfProKey'")
 # FIXME these are erroring
-Run-Wp-Cli-Command-With-Custom-Output -command "option patch insert acf_pro_license_status status 'active'"
-Run-Wp-Cli-Command-With-Custom-Output -command "option patch insert acf_pro_license_status lifetime 1"
-Run-Wp-Cli-Command-With-Custom-Output -command "option patch insert acf_pro_license_status refunded 0"
-Run-Wp-Cli-Command-With-Custom-Output -command "option patch insert acf_pro_license_status name 'Developer'"
-Run-Wp-Cli-Command-With-Custom-Output -command "option patch insert acf_pro_license_status next_check $tomorrow"
+$WpHandler.RunCliCommand("option patch insert acf_pro_license_status status 'active'")
+$WpHandler.RunCliCommand("option patch insert acf_pro_license_status lifetime 1")
+$WpHandler.RunCliCommand("option patch insert acf_pro_license_status refunded 0")
+$WpHandler.RunCliCommand("option patch insert acf_pro_license_status name 'Developer'")
+$WpHandler.RunCliCommand("option patch insert acf_pro_license_status next_check $tomorrow")
 
 # Check if Ninja Forms is active
 wp plugin is-active ninja-forms
 $ninjaFormsActive = $LASTEXITCODE -eq 0
 if ($ninjaFormsActive) {
 	$Logger.InfoMessage("Setting default Ninja Forms settings");
-	Run-Wp-Cli-Command-With-Custom-Output -command "option patch insert ninja_forms_settings date_format 'd/m/Y'"
-	Run-Wp-Cli-Command-With-Custom-Output -command "option patch insert ninja_forms_settings currency 'AUD'"
-	Run-Wp-Cli-Command-With-Custom-Output -command "option patch insert ninja_forms_settings show_welcome 0" # FIXME this one isn't working
-	Run-Wp-Cli-Command-With-Custom-Output -command "option patch insert ninja_forms_settings disable_admin_notices 1"
-	Run-Wp-Cli-Command-With-Custom-Output -command "option patch insert ninja_forms_settings builder_dev_mode 1"
-	Run-Wp-Cli-Command-With-Custom-Output -command "option patch insert ninja_forms_settings opinionated_styles ''"
+	$WpHandler.RunCliCommand("option patch insert ninja_forms_settings date_format 'd/m/Y'")
+	$WpHandler.RunCliCommand("option patch insert ninja_forms_settings currency 'AUD'")
+	$WpHandler.RunCliCommand("option patch insert ninja_forms_settings show_welcome 0") # FIXME this one isn't working
+	$WpHandler.RunCliCommand("option patch insert ninja_forms_settings disable_admin_notices 1")
+	$WpHandler.RunCliCommand("option patch insert ninja_forms_settings builder_dev_mode 1")
+	$WpHandler.RunCliCommand("option patch insert ninja_forms_settings opinionated_styles ''")
 }
 $Logger.DisplaySectionFooter()
 

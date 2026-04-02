@@ -1,24 +1,5 @@
 ﻿$Logger = [PowerPress.Logger]::new()
 
-function Update-WpConfig {
-	$wpConfigPath = Join-Path $global:SiteConfig.WpDir "wp-config.php"
-
-	if (-not (Test-Path $wpConfigPath)) {
-		$Logger.ErrorMessage("wp-config.php not found. Expected path: $wpConfigPath");
-		exit 1
-	}
-
-	$Logger.InfoMessage("Updating wp-config.php: $wpConfigPath");
-	$content = Get-Content $wpConfigPath
-	$dbName = $global:SiteConfig.DbName
-
-	# Update the database name to match the site name
-	$content = $content -replace "define\('DB_NAME', '.*?'\);", "define('DB_NAME', '$dbName');"
-
-	# Save the updated content back to the file
-	Set-Content -Path $wpConfigPath -Value $content
-}
-
 function Run-WordPress-Installation {
 	$wpDir = $global:SiteConfig.WpDir
 	Set-Location $wpDir
@@ -47,24 +28,24 @@ function Run-WordPress-Installation {
 			"--admin_password=$adminPassword"
 		)
 
-		Run-Wp-Cli-Command-With-Custom-Output -command $command
+		$WpHandler.RunCliCommand($command)
 
 		# Set default permalink structure
 		# This is not only convenient, but required for the REST API to work for automated tests out of the box
-		Run-Wp-Cli-Command-With-Custom-Output -command "rewrite structure '/%postname%/'"
+		$WpHandler.RunCliCommand("rewrite structure '/%postname%/'")
 
 		# When running WP-CLI using Git for Windows's shell interpreter, it causes the rewrite to have /C:/Program%20Files/Git/ in it
-		$permalinkSetting = Run-Wp-Cli-Command-With-Custom-Output -command "option get permalink_structure"
+		$permalinkSetting = $WpHandler.RunCliCommand("option get permalink_structure")
 		if ($permalinkSetting -ne "/%postname%/") {
 			$Logger.WarningMessage("Permalink structure is not set correctly, attempting to set it another way");
-			Run-Wp-Cli-Command-With-Custom-Output -command "option update permalink_structure '/%postname%/'"
+			$WpHandler.RunCliCommand("option update permalink_structure '/%postname%/'")
 			Write-Host "Permalink structure is now: " -NoNewline -ForegroundColor Blue
-			Run-Wp-Cli-Command-With-Custom-Output -command "option get permalink_structure"
+			$WpHandler.RunCliCommand("option get permalink_structure")
 			Write-Host "`n"
 		}
 
 		# Flush rewrite rules
-		Run-Wp-Cli-Command-With-Custom-Output -command "rewrite flush"
+		$WpHandler.RunCliCommand("rewrite flush")
 	}
 	catch {
 		$Logger.ErrorMessage("Error installing WordPress");
@@ -197,7 +178,7 @@ function Create-And-Activate-Child-Theme {
 			"--activate"
 		)
 
-		Run-Wp-Cli-Command-With-Custom-Output -command $command
+		$WpHandler.RunCliCommand($command)
 	}
 	catch {
 		$Logger.ErrorMessage("Failed to create and/or activate child theme");
@@ -259,4 +240,4 @@ function Run-Wp-Cli-Command-With-Custom-Output {
 	}
 }
 
-Export-ModuleMember -Function Update-WpConfig, Run-WordPress-Installation, Run-Postinstall-Cleanup, Copy-Plugin-From-Local-Path, Copy-Theme-From-Local-Path, Copy-Uploads-Directory-From-Local-Path, Create-And-Activate-Child-Theme, Run-Wp-Cli-Command-With-Custom-Output
+Export-ModuleMember -Function Run-WordPress-Installation, Run-Postinstall-Cleanup, Copy-Plugin-From-Local-Path, Copy-Theme-From-Local-Path, Copy-Uploads-Directory-From-Local-Path, Create-And-Activate-Child-Theme, Run-Wp-Cli-Command-With-Custom-Output
