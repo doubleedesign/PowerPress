@@ -22,7 +22,6 @@ public class DatabaseHandler {
 			this.connection.Open();
 
 			this.config = config;
-			this.dbName = config.DbName;
 
 			// Set the db password as an environment variable so it will be picked up automatically when running commands via CLI
 			Environment.SetEnvironmentVariable("MYSQL_PWD", this.config.DbPassword, EnvironmentVariableTarget.Process);
@@ -41,25 +40,25 @@ public class DatabaseHandler {
 
 	private bool DbIsEmpty() {
 		if (!this.DbExists()) {
-			this.logger.WarningMessage($"Database '{this.dbName}' does not exist. Skipping check.");
+			this.logger.WarningMessage($"Database '{this.config.DbName}' does not exist. Skipping check.");
 			return false;
 		}
 
-		List<Dictionary<string, object>> result = this.ExecuteQuery($"SELECT COUNT(*) FROM information_schema.tables WHERE table_schema = '{this.dbName}'");
+		List<Dictionary<string, object>> result = this.ExecuteQuery($"SELECT COUNT(*) FROM information_schema.tables WHERE table_schema = '{this.config.DbName}'");
 		if (result.Count > 0 && result[0].ContainsKey("COUNT(*)")) {
 			int tableCount = Convert.ToInt32(result[0]["COUNT(*)"]);
 			if (tableCount == 0) {
-				this.logger.InfoMessage($"Database {this.dbName} is empty");
+				this.logger.InfoMessage($"Database {this.config.DbName} is empty");
 				return true;
 			}
 		}
 
-		this.logger.InfoMessage($"Database {this.dbName} is not empty.");
+		this.logger.InfoMessage($"Database {this.config.DbName} is not empty.");
 		return false;
 	}
 
 	public bool DbExists() {
-		List<Dictionary<string, object>> results = this.ExecuteQuery($"SELECT 1 FROM information_schema.schemata WHERE schema_name = '{this.dbName}'");
+		List<Dictionary<string, object>> results = this.ExecuteQuery($"SELECT 1 FROM information_schema.schemata WHERE schema_name = '{this.config.DbName}'");
 		if (results.Count > 0) {
 			return true;
 		}
@@ -73,12 +72,12 @@ public class DatabaseHandler {
 			bool empty = this.DbIsEmpty();
 
 			if (!exists) {
-				this.logger.InfoMessage($"Database {this.dbName} does not exist. Skipping drop.");
+				this.logger.InfoMessage($"Database {this.config.DbName} does not exist. Skipping drop.");
 				return;
 			}
 
 			if (exists && empty) {
-				this.logger.SuccessMessage($"Database {this.dbName} is empty, skipping drop.");
+				this.logger.SuccessMessage($"Database {this.config.DbName} is empty, skipping drop.");
 				return;
 			}
 
@@ -89,18 +88,18 @@ public class DatabaseHandler {
 			);
 
 			if (proceed) {
-				this.ExecuteCommand($"DROP DATABASE {this.dbName}");
+				this.ExecuteCommand($"DROP DATABASE {this.config.DbName}");
 				if (!this.DbExists()) {
-					this.logger.SuccessMessage($"Dropped existing database {this.dbName}");
+					this.logger.SuccessMessage($"Dropped existing database {this.config.DbName}");
 				}
 				else {
-					this.logger.ErrorMessage($"Problem dropping database {this.dbName}");
+					this.logger.ErrorMessage($"Problem dropping database {this.config.DbName}");
 				}
 			}
 		}
 		catch (RuntimeException e) {
 			if (e.Message.Trim().EndsWith("does not exist")) {
-				this.logger.InfoMessage($"Database '{this.dbName}' does not exist. Skipping drop.");
+				this.logger.InfoMessage($"Database '{this.config.DbName}' does not exist. Skipping drop.");
 				return;
 			}
 
@@ -111,18 +110,18 @@ public class DatabaseHandler {
 
 	public void MaybeCreateDb() {
 		if (this.DbExists()) {
-			this.logger.WarningMessage($"Database '{this.dbName}' already exists. Skipping creation.");
+			this.logger.WarningMessage($"Database '{this.config.DbName}' already exists. Skipping creation.");
 			return;
 		}
 
-		this.ExecuteCommand($"CREATE DATABASE IF NOT EXISTS `{this.dbName}`");
+		this.ExecuteCommand($"CREATE DATABASE IF NOT EXISTS `{this.config.DbName}`");
 
 		if (!this.DbExists()) {
-			this.logger.ErrorMessage($"Problem creating database {this.dbName}");
+			this.logger.ErrorMessage($"Problem creating database {this.config.DbName}");
 			Environment.Exit(1);
 		}
 
-		this.logger.SuccessMessage($"Database '{this.dbName}' created successfully");
+		this.logger.SuccessMessage($"Database '{this.config.DbName}' created successfully");
 	}
 
 	public void MaybeImportData() {
@@ -136,7 +135,7 @@ public class DatabaseHandler {
 			throw new IOException($"SQL file not found: {pathToSql}");
 		}
 
-		this.ExecuteCommandViaCli([this.dbName, "<", pathToSql]);
+		this.ExecuteCommandViaCli([this.config.DbName, "<", pathToSql]);
 
 		if (this.DbIsEmpty()) {
 			this.logger.ErrorMessage("Problem importing database - it is empty.");
