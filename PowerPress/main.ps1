@@ -176,8 +176,9 @@ Import-Module $PSScriptRoot\PhpStormConfigHandler.psm1  -WarningAction SilentlyC
 # =============================================================================================================== #
 $Logger.DisplaySectionHeader("Installation")
 $Composer = [PowerPress.ComposerHandler]::new($global:SiteConfig)
+$Canvas = [PowerPress.CanvasRepo]::new($global:SiteConfig)
 # Initialise WordPress site foundation from template repo and update Composer and WordPress config
-Initialise-From-Template-Repo
+$Canvas.Init()
 $Composer.Init()
 Update-WpConfig
 

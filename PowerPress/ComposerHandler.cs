@@ -114,4 +114,34 @@ public class ComposerHandler {
 		JsonSerializerOptions options = new() { WriteIndented = true };
 		File.WriteAllText(this.composerJsonDevPath, json.ToJsonString(options));
 	}
+
+	public void RemoveDependency(string packageName) {
+		string[] files = [this.composerJsonPath, this.composerJsonDevPath];
+		foreach (string file in files) {
+			if (!File.Exists(file)) {
+				this.logger.ErrorMessage($"File not found: {file}, skipping dependency removal");
+				return;
+			}
+
+			string jsonContent = File.ReadAllText(file);
+			JsonNode json = JsonNode.Parse(jsonContent)!;
+
+			JsonNode? deps = json["require"];
+			if (deps is null) {
+				this.logger.InfoMessage($"No require section found in {file}, skipping dependency removal");
+				return;
+			}
+
+			if (deps[packageName] is null) {
+				this.logger.InfoMessage($"Package {packageName} not found in require, skipping dependency removal");
+				return;
+			}
+
+			deps.AsObject().Remove(packageName);
+
+			// Save updated JSON
+			JsonSerializerOptions options = new() { WriteIndented = true };
+			File.WriteAllText(file, json.ToJsonString(options));
+		}
+	}
 }
