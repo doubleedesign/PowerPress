@@ -1,13 +1,15 @@
-﻿namespace PowerPress;
+namespace PowerPress;
 
 public class WordPressHandler {
 	private readonly LocalSiteConfig config;
 	private readonly FileHandler fileHandler = new();
 	private readonly Logger logger = new();
 	private readonly PowerShellBridge ps = new();
+	private readonly ComposerHandler composerHandler;
 
 	public WordPressHandler(LocalSiteConfig config) {
 		this.config = config;
+		this.composerHandler = new ComposerHandler(config);
 	}
 
 	public void UpdateConfig() {
@@ -42,6 +44,7 @@ public class WordPressHandler {
 
 		if (Directory.Exists(Path.Combine(this.config.WpDir, ifInstalled))) {
 			this.fileHandler.MaybeDeleteFolder(Path.Combine(this.config.WpDir, thenRemove));
+			this.composerHandler.RemoveDependency(thenRemove);
 		}
 	}
 
