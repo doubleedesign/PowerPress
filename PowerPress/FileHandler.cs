@@ -3,11 +3,13 @@
 namespace PowerPress;
 
 public class FileHandler {
-	private readonly LocalSiteConfig config;
 	private readonly Logger logger = new();
 	private readonly UserInput ui = new();
+	private LocalSiteConfig config;
 
-	public FileHandler(LocalSiteConfig config) {
+	// The methods that take a path are used before the config is available in main.ps1,
+	// so we need the ability to set it later 
+	public void SetConfig(LocalSiteConfig config) {
 		this.config = config;
 	}
 
@@ -39,7 +41,7 @@ public class FileHandler {
 		}
 	}
 
-	public void MaybeDeleteFolder(string path, string? prompt) {
+	public void MaybeDeleteFolder(string path, string? prompt = null) {
 		if (!Directory.Exists(path)) {
 			this.logger.InfoMessage($"{path} does not exist, skipping deletion");
 		}

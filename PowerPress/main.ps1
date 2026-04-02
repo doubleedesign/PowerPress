@@ -25,7 +25,7 @@ Import-Classes
 # Store location the script was called from
 $scriptLocation = Get-Location
 
-# Create instances of the classes we need to use throughout the script (except those that can't be created until later)
+# Create instances of the classes we need to use throughout the script that do not need the local site config passed in at construction
 $Logger = [PowerPress.Logger]::new()
 $UI = [PowerPress.UserInput]::new()
 $DepsHandler = [PowerPress.Dependencies]::new()
@@ -147,8 +147,12 @@ if ($willImportExistingDb) {
 	$Logger.WarningMessage("The site name will be overridden by your database import")
 }
 
-# Handle database creation if required
+# Now that the config is ready, we can instantiate the database handler
 $DbHandler = [PowerPress.DatabaseHandler]::new($global:SiteConfig)
+# ...and update the file handler
+$FileHandler.SetConfig($global:SiteConfig)
+
+# Handle database creation if required
 $dbExists = $DbHandler.DbExists()
 if ($DbHandler.DbExists() -eq $true) {
 	$DbHandler.MaybeDropDb()
