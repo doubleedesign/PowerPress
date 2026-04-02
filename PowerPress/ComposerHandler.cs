@@ -144,4 +144,27 @@ public class ComposerHandler {
 			File.WriteAllText(file, json.ToJsonString(options));
 		}
 	}
+
+	private void RunCommand(string command) {
+		if (this.config.SiteDir is null) {
+			this.logger.ErrorMessage("Cannot run Composer command because the site directory is not set in the config");
+			return;
+		}
+
+		string[] args = command.Split(' ', StringSplitOptions.RemoveEmptyEntries);
+		Directory.SetCurrentDirectory(this.config.SiteDir);
+		CommandResult result = this.ps.RunCommand("composer", args);
+
+		if (!result.Success) {
+			this.logger.ErrorMessage(result.Output.First());
+			Environment.Exit(1);
+		}
+
+		this.logger.SuccessMessage(result.Output.First());
+	}
+
+	public void RunInstall() {
+		// TODO: ignore warnings coming from the installed packages
+		this.RunCommand("install");
+	}
 }

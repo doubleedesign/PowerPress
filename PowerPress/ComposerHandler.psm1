@@ -1,5 +1,5 @@
-﻿$Logger = [PowerPress.Logger]::new();
-
+﻿# TODO: This is here as a reference for possible updates to the C# version 
+# Delete when that is finalised
 function Run-Composer-Command-With-Custom-Output-Handling {
 	param (
 		[string]$command
@@ -30,50 +30,3 @@ function Run-Composer-Command-With-Custom-Output-Handling {
 		}
 	}
 }
-
-function Run-Composer-Install-For-Plugin {
-	param (
-		[string]$pluginDir,
-		[Boolean]$noDev = $true
-	)
-
-	$composerJsonPath = Join-Path $pluginDir "composer.json"
-	if (-not (Test-Path $composerJsonPath)) {
-		$Logger.ErrorMessage("Composer.json not found for plugin at expected path: $composerJsonPath");
-	}
-
-	Set-Location $pluginDir
-
-	if ($noDev) {
-		$Logger.InfoMessage("Running composer install --no-dev for plugin $pluginDir");
-		Run-Composer-Command-With-Custom-Output-Handling -command "install --no-dev"
-	}
-	else {
-		$Logger.InfoMessage("Running composer install for plugin $pluginDir");
-		Run-Composer-Command-With-Custom-Output-Handling -command "install"
-	}
-
-	if ($LastExitCode -ne 0) {
-		$Logger.ErrorMessage("Composer install failed for plugin $pluginDir");
-	}
-}
-
-function Run-Composer-Install {
-	# Move to project root
-	Set-Location $global:SiteConfig.SiteDir
-	$location = Get-Location
-	$Logger.DebugMessage("Working from: $location");
-
-	$Logger.InfoMessage("Installing project dependencies with Composer");
-
-	# Run install but ignore warnings coming from the installed packages
-	Run-Composer-Command-With-Custom-Output-Handling -command "install"
-
-	if ($LastExitCode -ne 0) {
-		$Logger.ErrorMessage("Composer install failed");
-		$FileHandler.MaybeDeleteFolder($global:SiteConfig.SiteDir)
-		exit 1
-	}
-}
-
-Export-ModuleMember -Function Run-Composer-Command-With-Custom-Output-Handling, Run-Composer-Install, Run-Composer-Install-For-Plugin

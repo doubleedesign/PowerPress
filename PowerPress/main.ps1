@@ -194,7 +194,7 @@ else {
 	$Logger.InfoMessage("Running setup in standard mode. Double-E Design packages will be downloaded from their published repositories.");
 }
 
-Run-Composer-Install
+$Composer.RunInstall()
 
 # Import existing database
 if ($willImportExistingDb) {
