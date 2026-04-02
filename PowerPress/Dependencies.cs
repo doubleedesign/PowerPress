@@ -18,13 +18,13 @@ public class Dependencies {
 	private bool CheckPowerShellVersion() {
 		Version version = this.ps.GetVersion();
 
-		if (version.Major < 7) {
+		if (version.Major < 7 || version is { Major: 7, Minor: < 6 }) {
 			this.logger.ErrorMessage(
-				"This script requires PowerShell 7 or higher. Please update your PowerShell version and try again."
+				"This script requires PowerShell 7.6.0 or higher. Please update your PowerShell version and try again."
 			);
 
 			this.logger.InfoMessage(
-				"If you are running via the terminal, install PowerShell 7 from the Microsoft Store, via Chocolatey, or another method and run this script using that instead of 'Windows PowerShell'."
+				"Install or upgrade PowerShell 7 from the Microsoft Store, via Chocolatey, or another method and run this script using that instead of 'Windows PowerShell'."
 			);
 
 			return false;

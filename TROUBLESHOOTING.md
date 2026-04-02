@@ -47,6 +47,17 @@ In a PowerShell terminal, kill the process manually:
 taskkill /IM PowerPress.exe /F
 ```
 
+### PowerShell can't find the C# classes
+
+#### Error
+> Failed to initialise PowerPress classes: Could not find type
+
+#### Cause
+The way C# classes are loaded into the script requires .NET SDK 10+, and PowerShell itself was on older versions until 7.6.0.
+
+#### Solution
+Upgrade PowerShell to 7.6.0 or later.
+
 ---
 ## PowerShell
 
