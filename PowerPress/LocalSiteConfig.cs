@@ -21,18 +21,18 @@ public class LocalSiteConfig {
 		this.ProductionUrl = productionUrl.Contains("https://") ? productionUrl : "https://" + productionUrl;
 	}
 
-	public string? SiteName { get; private set; }
-	public string? SiteSlug { get; private set; }
+	public string SiteName { get; private set; }
+	public string SiteSlug { get; private set; }
 	public string? SiteShortName { get; }
-	public string? SiteDir { get; }
-	public string? WpDir { get; private set; }
-	public string? DbName { get; private set; }
-	public string? DbUser { get; private set; }
-	public string? DbPassword { get; private set; }
-	public string? DbHost { get; private set; }
-	public string? DbPort { get; private set; }
-	public string? SiteUrl { get; private set; }
-	public string? ProductionUrl { get; private set; }
+	public string SiteDir { get; }
+	public string WpDir { get; private set; }
+	public string DbName { get; private set; }
+	public string DbUser { get; private set; }
+	public string DbPassword { get; private set; }
+	public string DbHost { get; private set; }
+	public string DbPort { get; private set; }
+	public string SiteUrl { get; private set; }
+	public string ProductionUrl { get; private set; }
 	public string? AdminUser { get; private set; }
 	public string? AdminPassword { get; private set; }
 	public string? AdminEmail { get; private set; }

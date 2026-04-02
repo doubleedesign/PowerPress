@@ -13,11 +13,6 @@ public class PhpStormHandler {
 	}
 
 	public void UpdateWorkspaceConfig() {
-		if (this.config.SiteDir is null) {
-			this.logger.ErrorMessage("Cannot update PhpStorm workspace config because SiteDir is not set in config");
-			return;
-		}
-
 		// Find workspace.xml in site directory -> .idea
 		string workspaceXmlPath = Path.Combine(this.config.SiteDir, ".idea", "workspace.xml");
 		if (!File.Exists(workspaceXmlPath)) {
@@ -58,11 +53,6 @@ public class PhpStormHandler {
 	}
 
 	public void UpdateDeploymentConfig() {
-		if (this.config.SiteDir is null) {
-			this.logger.ErrorMessage("Cannot update PhpStorm deployment config because SiteDir is not set in config");
-			return;
-		}
-
 		string serverIp = this.ui.PromptForText("Enter the IP address or hostname of your production server");
 		if (string.IsNullOrEmpty(serverIp)) {
 			this.logger.WarningMessage("No server IP entered, skipping PhpStorm deployment config update");

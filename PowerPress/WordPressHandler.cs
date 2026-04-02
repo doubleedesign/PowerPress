@@ -16,16 +16,6 @@ public class WordPressHandler {
 	}
 
 	public void UpdateConfig() {
-		if (this.config.SiteDir is null) {
-			this.logger.ErrorMessage("Cannot update config because site directory is not set");
-			return;
-		}
-
-		if (this.config.WpDir is null) {
-			this.logger.ErrorMessage("Cannot update config because WordPress directory is not set");
-			return;
-		}
-
 		if (!File.Exists(Path.Combine(this.config.WpDir, "wp-config.php"))) {
 			this.logger.ErrorMessage("Cannot update wp-config.php because it does not exist at the expected location");
 		}
@@ -40,11 +30,6 @@ public class WordPressHandler {
 	}
 
 	public void RunCliCommand(string command, bool exitOnFail = false) {
-		if (this.config.WpDir is null) {
-			this.logger.ErrorMessage("Cannot run WP-CLI command because the WordPress directory is not set in the config");
-			return;
-		}
-
 		string[] args = command.Split(' ', StringSplitOptions.RemoveEmptyEntries);
 		Directory.SetCurrentDirectory(this.config.WpDir);
 		CommandResult result = this.ps.RunCommand("wp", ["--skip-plugins", "--skip-themes", ..args]);
@@ -62,11 +47,6 @@ public class WordPressHandler {
 	}
 
 	public void RunInstall() {
-		if (this.config.WpDir is null) {
-			this.logger.ErrorMessage("Cannot run installation because WordPress directory is not set in config");
-			Environment.Exit(1);
-		}
-
 		if (!File.Exists(Path.Combine(this.config.WpDir, "wp-config.php"))) {
 			this.logger.ErrorMessage("Cannot run installation because wp-config was not found");
 			Environment.Exit(1);
@@ -100,19 +80,14 @@ public class WordPressHandler {
 	}
 
 	public void CreateAndActivateChildTheme() {
-		if (this.config.WpDir is null) {
-			this.logger.ErrorMessage("Cannot create child theme because the WordPress directory is not set in the config");
-			return;
-		}
-
 		Directory.SetCurrentDirectory(this.config.WpDir);
 
 		string authorName = this.ui.PromptForText("Enter the author name for the child theme", "Double-E Design");
 		string authorUri = this.ui.PromptForText("Enter the author URI for the child theme", "https://www.doubleedesign.com.au");
 
-		string siteName = this.config.SiteName ?? "Untitled Site";
-		string themeDirectoryName = this.config.SiteSlug ?? "child-theme";
-		string themeUri = this.config.ProductionUrl ?? "";
+		string siteName = this.config.SiteName;
+		string themeDirectoryName = this.config.SiteSlug;
+		string themeUri = this.config.ProductionUrl;
 
 		this.logger.InfoMessage("Child theme configuration:");
 		Dictionary<string, string> themeConfig = new() {
@@ -143,10 +118,6 @@ public class WordPressHandler {
 	}
 
 	public void RunPostinstallCleanup() {
-		if (this.config.WpDir is null) {
-			return;
-		}
-
 		// Go into the themes directory and delete default themes (anything starting with twenty*)
 		string themesDir = Path.Combine(this.config.WpDir, "wp-content", "themes");
 		foreach (string dir in Directory.GetDirectories(themesDir, "twenty*")) {
@@ -163,23 +134,16 @@ public class WordPressHandler {
 	}
 
 	public void MaybeRemovePlugin(string ifInstalled, string thenRemove) {
-		if (this.config.WpDir is null) {
-			this.logger.ErrorMessage("Cannot remove plugin because WordPress directory is not set in config");
+		if (!Directory.Exists(Path.Combine(this.config.WpDir, ifInstalled))) {
+			this.logger.WarningMessage($"Plugin {ifInstalled} is not present, skipping removal");
 			return;
 		}
 
-		if (Directory.Exists(Path.Combine(this.config.WpDir, ifInstalled))) {
-			this.fileHandler.MaybeDeleteFolder(Path.Combine(this.config.WpDir, thenRemove));
-			this.composerHandler.RemoveDependency(thenRemove);
-		}
+		this.fileHandler.MaybeDeleteFolder(Path.Combine(this.config.WpDir, thenRemove));
+		this.composerHandler.RemoveDependency(thenRemove);
 	}
 
 	public void CopyPluginFromLocalPath(string source) {
-		if (this.config.WpDir is null) {
-			this.logger.ErrorMessage("Cannot copy plugin because the WordPress directory is not set in the config");
-			return;
-		}
-
 		string pluginDirName = Path.GetFileName(source);
 		string dest = Path.Combine(this.config.WpDir, "wp-content", "plugins", pluginDirName);
 
@@ -192,11 +156,6 @@ public class WordPressHandler {
 	}
 
 	public void CopyThemeFromLocalPath(string source) {
-		if (this.config.WpDir is null) {
-			this.logger.ErrorMessage("Cannot copy theme because the WordPress directory is not set in the config");
-			return;
-		}
-
 		string themeDirName = Path.GetFileName(source);
 		string dest = Path.Combine(this.config.WpDir, "wp-content", "themes", themeDirName);
 
@@ -209,11 +168,6 @@ public class WordPressHandler {
 	}
 
 	public void CopyUploadsFromLocalPath(string source) {
-		if (this.config.WpDir is null) {
-			this.logger.ErrorMessage("Cannot copy uploads because the WordPress directory is not set in the config");
-			return;
-		}
-
 		string dest = Path.Combine(this.config.WpDir, "wp-content", "uploads");
 
 		if (Directory.Exists(dest)) {

@@ -126,7 +126,7 @@ public class DatabaseHandler {
 	}
 
 	public void MaybeImportData() {
-		if (this.dbName is null || !this.DbExists()) {
+		if (!this.DbExists()) {
 			throw new RuntimeException("Database has not been initialised");
 		}
 
@@ -194,15 +194,6 @@ public class DatabaseHandler {
 	/// </summary>
 	/// <param name="args"></param>
 	private void ExecuteCommandViaCli(string[] args) {
-		if (this.config.DbUser is null || this.config.DbPassword is null) {
-			throw new RuntimeException("Database credentials not set in config, cannot run command via MySQL CLI");
-		}
-
-		if (this.config.DbHost is null || this.config.DbPort is null) {
-			this.logger.ErrorMessage("Cannot run MySQL CLI command because local site config is missing values.");
-			Environment.Exit(1);
-		}
-
 		string[] creds = ["-h", this.config.DbHost, "-P", this.config.DbPort, "-u", this.config.DbUser];
 		CommandResult result = this.ps.RunCommand("mysql", creds.Concat(args).ToArray());
 

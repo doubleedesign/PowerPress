@@ -51,7 +51,7 @@ public class ComposerHandler {
 		this.logger.InfoMessage($"Updating composer.json: {path}");
 		this.UpdateComposerJson(path, "name", $"doubleedesign/{this.config.SiteSlug}");
 		this.UpdateComposerJson(path, "version", "1.0.0");
-		this.UpdateComposerJson(path, "homepage", this.config.ProductionUrl ?? "");
+		this.UpdateComposerJson(path, "homepage", this.config.ProductionUrl);
 
 		// Confirm none of the updated keys have empty values
 		JsonNode json = JsonNode.Parse(File.ReadAllText(path))!;
@@ -146,11 +146,6 @@ public class ComposerHandler {
 	}
 
 	private void RunCommand(string command) {
-		if (this.config.SiteDir is null) {
-			this.logger.ErrorMessage("Cannot run Composer command because the site directory is not set in the config");
-			return;
-		}
-
 		string[] args = command.Split(' ', StringSplitOptions.RemoveEmptyEntries);
 		Directory.SetCurrentDirectory(this.config.SiteDir);
 		CommandResult result = this.ps.RunCommand("composer", args);

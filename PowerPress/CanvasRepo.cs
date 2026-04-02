@@ -14,11 +14,6 @@ public class CanvasRepo {
 	}
 
 	public void Init() {
-		if (this.config.SiteDir is null) {
-			this.logger.ErrorMessage("Could not initialise from template repo because site directory is not set.");
-			Environment.Exit(1);
-		}
-
 		if (!Directory.Exists(this.config.SiteDir)) {
 			this.logger.ErrorMessage($"Site directory does not exist: {this.config.SiteDir}");
 			Environment.Exit(1);

@@ -6,12 +6,12 @@ namespace PowerPress;
 public class FileHandler {
 	private readonly Logger logger = new();
 	private readonly UserInput ui = new();
-	private LocalSiteConfig config;
+	private LocalSiteConfig? config;
 
 	// The methods that take a path are used before the config is available in main.ps1,
 	// so we need the ability to set it later 
-	public void SetConfig(LocalSiteConfig config) {
-		this.config = config;
+	public void SetConfig(LocalSiteConfig configObj) {
+		this.config = configObj;
 	}
 
 	public bool MaybeCreateFolder(string path) {
@@ -63,8 +63,8 @@ public class FileHandler {
 	}
 
 	public void UpdateProjectReadme() {
-		if (this.config.SiteDir is null) {
-			this.logger.WarningMessage("Could not update README because the site directory is not set");
+		if (this.config is null) {
+			this.logger.ErrorMessage("Cannot update README because site config is not available");
 			return;
 		}
 
@@ -75,8 +75,8 @@ public class FileHandler {
 		}
 
 		try {
-			this.FindAndReplaceText("README-project.md", "My Project Name", this.config.SiteName ?? "");
-			this.FindAndReplaceText("README-project.md", "[Client Name]", this.config.SiteName ?? "");
+			this.FindAndReplaceText("README-project.md", "My Project Name", this.config.SiteName);
+			this.FindAndReplaceText("README-project.md", "[Client Name]", this.config.SiteName);
 			// TODO: Add a check to verify the content was actually updated
 			this.logger.SuccessMessage("Updated README-project.md with project name");
 		}
@@ -115,10 +115,6 @@ public class FileHandler {
 	/// <param name="search">The value to search for</param>
 	/// <param name="replace">The value to replace it with</param>
 	public void FindAndReplaceText(string path, string search, string replace) {
-		if (this.config.SiteDir is null) {
-			this.logger.ErrorMessage("Cannot update file because SiteDir is not set in config");
-		}
-
 		string content = File.ReadAllText(path);
 		content = content.Replace(search, replace);
 
@@ -126,10 +122,6 @@ public class FileHandler {
 	}
 
 	public void FindAndReplaceRegex(string path, string regex, string replace) {
-		if (this.config.SiteDir is null) {
-			this.logger.ErrorMessage("Cannot update file because SiteDir is not set in config");
-		}
-
 		string content = File.ReadAllText(path);
 		content = Regex.Replace(content, regex, replace);
 
