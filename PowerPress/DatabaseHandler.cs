@@ -6,7 +6,6 @@ namespace PowerPress;
 public class DatabaseHandler {
 	private readonly LocalSiteConfig config;
 	private readonly MySqlConnection connection;
-	private readonly string? dbName;
 	private readonly Logger logger = new();
 	private readonly PowerShellBridge ps = new();
 	private readonly UserInput ui = new();
