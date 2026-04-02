@@ -366,8 +366,9 @@ $Logger.DisplaySectionFooter()
 
 # =============================================================================================================== #
 $Logger.DisplaySectionHeader("IDE and Deployment")
-Update-PhpStorm-Workspace-Config
-Maybe-Update-PhpStorm-Deployment-Config
+$PhpStormConfigHandler = [PowerPress.PhpStormHandler]::new($global:SiteConfig)
+$PhpStormConfigHandler.UpdateWorkspaceConfig()
+$PhpStormConfigHandler.UpdateDeploymentConfig()
 $Logger.DisplaySectionFooter()
 
 
