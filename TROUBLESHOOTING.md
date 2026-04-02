@@ -32,6 +32,21 @@ choco install dotnet-sdk
 
 If you are still seeing inconsistencies, it could be a simple version difference between Rider and system.
 
+### Error building the project when running in Rider
+
+#### Error
+> Warning MSB3026 : Could not copy "obj\Debug\net10.0\PowerPress.dll" to "bin\Debug\net10.0\PowerPress.dll".
+
+#### Cause
+This error occurs if you close PowerShell without terminating the process first, or you leave one open with the script still running and then attempt to run it in a new PowerShell instance or run the program from Rider.
+
+#### Solution
+In a PowerShell terminal, kill the process manually:
+
+```powershell
+taskkill /IM PowerPress.exe /F
+```
+
 ---
 ## PowerShell
 
