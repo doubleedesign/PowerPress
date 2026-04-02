@@ -35,7 +35,7 @@ public class Dependencies {
 	}
 
 	private bool CheckMainCliCommands() {
-		string[] commands = ["php", "mysql", "composer", "git", "herd", "robocopy", "wp"];
+		string[] commands = ["php", "mysql", "composer", "git", "herd", "wp"];
 		List<string> missing = [];
 
 		foreach (string command in commands) {

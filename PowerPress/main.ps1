@@ -206,16 +206,16 @@ if ($willImportExistingDb) {
 		$Logger.ErrorMessage("Failed to import database");
 		$Logger.ErrorMessage($_);
 		$Logger.InfoMessage("Proceeding as new install instead");
-		Run-WordPress-Installation
+		$WpHandler.RunInstall()
 	}
 }
 else {
-	Run-WordPress-Installation
+	$WpHandler.RunInstall()
 }
 
 # TODO find-and-replace of the site URL using WP-CLI
 
-Run-Postinstall-Cleanup
+$WpHandler.RunPostinstallCleanup()
 $Logger.DisplaySectionFooter()
 
 
@@ -224,7 +224,7 @@ $Logger.DisplaySectionHeader("Plugins, Themes, and Uploads")
 # Add ACF Pro
 $defaultAcfProPath = "C:\Users\$username\PhpStormProjects\advanced-custom-fields-pro"
 $acfProPath = $UI.PromptForText("Enter the path to your local copy of the Advanced Custom Fields Pro plugin", $defaultAcfProPath)
-Copy-Plugin-From-Local-Path -sourcePath $acfProPath
+$WpHandler.CopyPluginFromLocalPath($acfProPath)
 
 # Optionally import wp-content from an existing backup
 $importContentChoice = $UI.PromptForYesOrNo(
@@ -243,19 +243,17 @@ if ($importingWpContent) {
 	else {
 		$pluginsToImport = Get-ChildItem -Path (Join-Path $pathToContent "plugins") -Directory
 		foreach ($plugin in $pluginsToImport) {
-			$sourcePath = $plugin.FullName
-			Copy-Plugin-From-Local-Path -sourcePath $sourcePath
+			$WpHandler.CopyPluginFromLocalPath($plugin.FullName)
 		}
 
 		$themesToImport = Get-ChildItem -Path (Join-Path $pathToContent "themes") -Directory
 		foreach ($theme in $themesToImport) {
-			$sourcePath = $theme.FullName
-			Copy-Theme-From-Local-Path -sourcePath $sourcePath
+			$WpHandler.CopyThemeFromLocalPath($theme.FullName)
 		}
 
 		# Copy uploads folder if it exists in the backup
 		$sourceUploadsPath = Join-Path $pathToContent "uploads"
-		Copy-Uploads-Directory-From-Local-Path -sourcePath $sourceUploadsPath
+		$WpHandler.CopyUploadsFromLocalPath($sourceUploadsPath)
 	}
 }
 
@@ -274,7 +272,7 @@ foreach ($triggerFolder in $folderMap.Keys) {
 
 # If a theme was not imported, create a new child theme
 if (-not $importingWpContent) {
-	Create-And-Activate-Child-Theme
+	$WpHandler.CreateAndActivateChildTheme()
 }
 
 # Activate plugins in the appropriate order (accounting for dependencies some of them have)

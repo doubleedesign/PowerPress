@@ -139,4 +139,37 @@ public class FileHandler {
 	private bool FolderExistsNonEmpty(string path) {
 		return Directory.Exists(path) && Directory.EnumerateFileSystemEntries(path).Any();
 	}
+
+	public void CopyDirectory(string source, string dest) {
+		if (!Directory.Exists(source)) {
+			this.logger.WarningMessage($"Directory {source} does not exist, skipping copy");
+			return;
+		}
+
+		// Ref: https://learn.microsoft.com/en-us/dotnet/standard/io/how-to-copy-directories
+		// Get information about the source directory
+		DirectoryInfo dir = new(source);
+		// Cache directories before we start copying
+		DirectoryInfo[] dirs = dir.GetDirectories();
+		// Create the destination directory
+		Directory.CreateDirectory(dest);
+
+		// Get the files in the source directory and copy to the destination directory
+		foreach (FileInfo file in dir.GetFiles()) {
+			string targetFilePath = Path.Combine(dest, file.Name);
+			file.CopyTo(targetFilePath);
+		}
+
+		// Recursively call this method to copy subdirectories
+		foreach (DirectoryInfo subDir in dirs) {
+			string newDestinationDir = Path.Combine(dest, subDir.Name);
+			this.CopyDirectory(subDir.FullName, newDestinationDir);
+		}
+
+		if (!this.FolderExistsNonEmpty(dest)) {
+			throw new IOException($"Failed to copy directory from {source} to {dest}");
+		}
+
+		this.logger.SuccessMessage($"Copied directory from {source} to {dest}");
+	}
 }
