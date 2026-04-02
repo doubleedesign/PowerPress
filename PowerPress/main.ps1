@@ -86,26 +86,28 @@ $Logger.DisplaySectionFooter()
 # =============================================================================================================== #
 $Logger.DisplaySectionHeader("Base Config");
 $username = $env:USERNAME
+
 $defaultProjectsDir = "C:\Users\$username\ClientSites"
 $PROJECTS_DIR = $UI.PromptForText("Enter the path to your website projects directory", $defaultProjectsDir)
 $Logger.InfoMessage("Using projects directory: $PROJECTS_DIR");
+
 $SiteDir = Join-Path $PROJECTS_DIR $SiteName
 $Logger.InfoMessage("Site directory will be: $SiteDir");
+
+$ProductionUrl = $UI.PromptForText("Enter the production URL for this site (without https://)", "")
 
 # If directory exists, prompt to delete or exit
 $continue = $FileHandler.MaybeDeleteFolder($SiteDir, "Directory $SiteDir already exists. Do you want to delete it and start fresh?")
 if (-not $continue) {
 	$Logger.WarningMessage("Cannot initialise new site because there is an existing directory at $SiteDir.");
 	$Logger.WarningMessage("Exiting script.");
-	exit 0
+	exit 1
 }
 $continue = $FileHandler.MaybeCreateFolder($SiteDir)
 if (-not $continue) {
 	$Logger.ErrorMessage("Failed to create site directory. Exiting script.");
 	exit 1
 }
-
-$ProductionUrl = $UI.PromptForText("Enter the production URL for this site (without https://)", "")
 $Logger.DisplaySectionFooter()
 
 
@@ -117,7 +119,7 @@ $dbUser = $UI.PromptForText("Enter local database username", "root")
 $dbPass = $UI.PromptForText("Enter local database password", "")
 
 # Save config as a global object so it can be easily passed around to different functions in modules called after its creation
-$global:SiteConfig = [LocalSiteConfig]::new(
+$SiteConfig = [LocalSiteConfig]::new(
 	$SiteName,
 	$SiteDir,
 	$ProductionUrl,
@@ -135,22 +137,21 @@ $willImportExistingDb = $UI.PromptForYesOrNo(
 );
 
 if (-not $willImportExistingDb) {
-	$defaultAdminEmail = "leesa@doubleedesign.com.au"
-	$AdminEmail = $UI.PromptForText("Enter the admin email for this site", $defaultAdminEmail)
-	$global:SiteConfig.AddWordPressAdmin($AdminEmail)
+	$AdminEmail = $UI.PromptForText("Enter the admin email for this site", "leesa@doubleedesign.com.au")
+	$SiteConfig.AddWordPressAdmin($AdminEmail)
 }
 
 # Output all the config values for info and debugging
 $Logger.InfoMessage("`nFinal configuration:");
-$Logger.DisplayJsonTable($global:SiteConfig.GetJsonString())
+$Logger.DisplayJsonTable($SiteConfig.GetJsonString())
 if ($willImportExistingDb) {
 	$Logger.WarningMessage("The site name will be overridden by your database import")
 }
 
 # Now that the config is ready, we can instantiate the database handler
-$DbHandler = [PowerPress.DatabaseHandler]::new($global:SiteConfig)
-# ...and update the file handler
-$FileHandler.SetConfig($global:SiteConfig)
+$DbHandler = [PowerPress.DatabaseHandler]::new($SiteConfig)
+# ...and update the file handler with the config
+$FileHandler.SetConfig($SiteConfig)
 
 # Handle database creation if required
 $dbExists = $DbHandler.DbExists()
@@ -170,9 +171,9 @@ $Logger.DisplaySectionFooter()
 # =============================================================================================================== #
 $Logger.DisplaySectionHeader("Installation")
 # Instantiate the classes that we need for these steps
-$Canvas = [PowerPress.CanvasRepo]::new($global:SiteConfig)
-$Composer = [PowerPress.ComposerHandler]::new($global:SiteConfig)
-$WpHandler = [PowerPress.WordPressHandler]::new($global:SiteConfig)
+$Canvas = [PowerPress.CanvasRepo]::new($SiteConfig)
+$Composer = [PowerPress.ComposerHandler]::new($SiteConfig)
+$WpHandler = [PowerPress.WordPressHandler]::new($SiteConfig)
 # Initialise WordPress site foundation from template repo and update Composer and WordPress config
 $Canvas.Init()
 $Composer.Init()
@@ -194,9 +195,10 @@ else {
 	$Logger.InfoMessage("Running setup in standard mode. Double-E Design packages will be downloaded from their published repositories.");
 }
 
+# Install dependencies via Composer
 $Composer.RunInstall()
 
-# Import existing database
+# Import existing database if applicable, then run WordPress installation
 if ($willImportExistingDb) {
 	try {
 		$DbHandler.MaybeImportDb()
@@ -276,7 +278,6 @@ if (-not $importingWpContent) {
 }
 
 # Activate plugins in the appropriate order (accounting for dependencies some of them have)
-Set-Location $global:SiteConfig.WpDir
 $plugins = @(
 	"advanced-custom-fields-pro",
 	"doublee-local-dev",
@@ -300,24 +301,24 @@ $pluginsToComposerUpdate = @(
 
 # Make sure certain plugins have their correct Composer deps (there can be discrepancies if dev ones were left behind and committed accidentally)
 foreach ($plugin in $pluginsToComposerUpdate) {
-	$pluginPath = Join-Path $global:SiteConfig.WpDir "wp-content\plugins\$plugin"
+	$pluginPath = Join-Path $SiteConfig.WpDir "wp-content\plugins\$plugin"
 	if (Test-Path $pluginPath) {
 		$Logger.InfoMessage("Installing Composer dependencies for $plugin");
 		Set-Location $pluginPath
 		if (-not $willUseDevComposerJson) {
-			Run-Composer-Command-With-Custom-Output-Handling -command "install --no-dev --prefer-dist --no-cache"
+			$Composer.RunCommand("install --no-dev --prefer-dist --no-cache")
 		}
 		else {
-			Run-Composer-Command-With-Custom-Output-Handling -command "install --no-cache"
+			$Composer.RunCommand("install --no-cache")
 		}
 
-		Set-Location $global:SiteConfig.WpDir
+		Set-Location $SiteConfig.WpDir
 	}
 }
 
 $Logger.InfoMessage("Activating plugins");
 foreach ($plugin in $plugins) {
-	$pluginPath = Join-Path $global:SiteConfig.WpDir "wp-content\plugins\$plugin"
+	$pluginPath = Join-Path $SiteConfig.WpDir "wp-content\plugins\$plugin"
 	if (Test-Path $pluginPath) {
 		$WpHandler.RunCliCommand("plugin activate $plugin")
 	}
@@ -361,7 +362,7 @@ $Logger.DisplaySectionFooter()
 
 # =============================================================================================================== #
 $Logger.DisplaySectionHeader("IDE and Deployment")
-$PhpStormConfigHandler = [PowerPress.PhpStormHandler]::new($global:SiteConfig)
+$PhpStormConfigHandler = [PowerPress.PhpStormHandler]::new($SiteConfig)
 $PhpStormConfigHandler.UpdateWorkspaceConfig()
 $PhpStormConfigHandler.UpdateDeploymentConfig()
 $Logger.DisplaySectionFooter()
@@ -376,16 +377,15 @@ $Logger.DisplaySectionFooter()
 # =============================================================================================================== #
 $Logger.DisplaySectionHeader("Local web server")
 $Logger.InfoMessage("Registering site in Laravel Herd");
-Set-Location $global:SiteConfig.WpDir
-$SiteSlug = $global:SiteConfig.SiteSlug
-herd link $SiteSlug
-herd secure $SiteSlug
+Set-Location $SiteConfig.WpDir
+herd link $SiteConfig.SiteSlug
+herd secure $SiteConfig.SiteSlug
 $Logger.DisplaySectionFooter()
 
 
 # =============================================================================================================== #
 $Logger.DisplaySectionHeader("Version control")
-Set-Location $SiteDir
+Set-Location $SiteConfig.SiteDir
 git init
 git add .
 git commit -m "Set up site from WordPress Canvas template using PowerPress"
@@ -394,19 +394,19 @@ $Logger.DisplaySectionFooter()
 
 # =============================================================================================================== #
 Write-Host "`n ============================ Setup Complete ================================" -ForegroundColor Green
-$siteUrl = $global:SiteConfig.SiteUrl
+$siteUrl = $SiteConfig.SiteUrl
 Write-Host "Admin URL: $siteUrl/wp-admin" -ForegroundColor Cyan
 $credentialsSaved = $False
 if (-not $willImportExistingDb -and $useBitwarden) {
-	$credentialsSaved = $CredsHandler.MaybeSaveCredentials($global:SiteConfig:SiteName,$global:SiteConfig:SiteUrl,$global:SiteConfig.AdminUser,$global:SiteConfig.AdminPassword);
+	$credentialsSaved = $CredsHandler.MaybeSaveCredentials($SiteConfig:SiteName, $SiteConfig:SiteUrl, $SiteConfig.AdminUser, $SiteConfig.AdminPassword);
 }
 
 Write-Host "You might still need to:" -ForegroundColor Cyan
 Write-Host "`t - Update README.md with project-specific details" -ForegroundColor Cyan
 Write-Host "`t - Enter your FTP username and password in PhpStorm's deployment settings" -ForegroundColor Cyan
 if (-not $willImportExistingDb -and -not $credentialsSaved) {
-	$adminUser = $global:SiteConfig.AdminUser
-	$adminPassword = $global:SiteConfig.AdminPassword
+	$adminUser = $SiteConfig.AdminUser
+	$adminPassword = $SiteConfig.AdminPassword
 	Write-Host "`t - Save your admin username and password ( $adminUser | $adminPassword ) to your password manager or another safe location" -ForegroundColor Cyan
 }
 if (-not $importingWpContent) {
@@ -423,8 +423,7 @@ Write-Host "`t - Set up your SEO Framework configuration" -ForegroundColor Cyan
 Write-Host "`t - Double-check your permalink settings" -ForegroundColor Cyan
 Write-Host "============================================================================" -ForegroundColor Green
 
-$siteDir = $global:SiteConfig.SiteDir
-Set-Location $siteDir
+Set-Location $SiteConfig.SiteDir
 try {
 	$Logger.InfoMessage("Launching WP Admin in browser");
 	Start-Process "$siteUrl/wp-admin"
@@ -435,7 +434,7 @@ catch {
 
 try {
 	$phpStormPath = "C:\Users\$username\AppData\Local\Programs\PhpStorm\bin\phpstorm64.exe"
-	Start-Process $phpStormPath $global:SiteConfig.SiteDir
+	Start-Process $phpStormPath $SiteConfig.SiteDir
 }
 catch {
 	$Logger.WarningMessage("Could not automatically open the project in PhpStorm :(");

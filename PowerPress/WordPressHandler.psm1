@@ -5,7 +5,7 @@ function Run-Wp-Cli-Command-With-Custom-Output {
 		[object]$command # expected to be a string or string[]
 	)
 
-	$wpDir = $global:SiteConfig.WpDir
+	$wpDir = $SiteConfig.WpDir
 	Set-Location $wpDir
 
 	# Normalize to array and add flags we always want to use
