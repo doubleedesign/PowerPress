@@ -1,4 +1,5 @@
 ﻿using System.Collections.ObjectModel;
+using System.Diagnostics;
 using System.Management.Automation;
 
 namespace PowerPress;
@@ -45,7 +46,9 @@ public class PowerShellBridge {
 	}
 
 	/// <summary>
-	///     Run the specified command with the given non-named arguments and return the output and errors.
+	///     Run a simple command with the given non-named arguments and return the output and errors.
+	///     Intended for CLI commands that give simple output,
+	///     not those that give progress updates like composer install or git clone.
 	/// </summary>
 	/// <example>
 	///     RunCommand("wp", ["help", "core"]) would run "wp help core".
@@ -74,5 +77,47 @@ public class PowerShellBridge {
 		this.ps.Streams.Error.Clear();
 
 		return new CommandResult(errors.Count == 0, results.Concat(errors).ToList());
+	}
+
+	public CommandResult RunProcess(string command, string args, string workingDirectory, bool verbose = true) {
+		ProcessStartInfo psi = new() {
+			FileName = command,
+			Arguments = args,
+			WorkingDirectory = workingDirectory,
+			UseShellExecute = false,
+			RedirectStandardOutput = !verbose,
+			RedirectStandardError = !verbose
+		};
+
+		using Process process = Process.Start(psi) ?? throw new InvalidOperationException($"Failed to start process: {command}");
+
+		// Collect and handle output before exiting the process if applicable
+		if (!verbose) {
+			string stdout = process.StandardOutput.ReadToEnd();
+			string stderr = process.StandardError.ReadToEnd();
+			process.WaitForExit();
+
+			List<string> output = stdout
+				.Split('\n', StringSplitOptions.RemoveEmptyEntries)
+				.Select(l => l.TrimEnd('\r'))
+				.ToList();
+
+			if (!string.IsNullOrEmpty(stderr)) {
+				output.AddRange(stderr
+					.Split('\n', StringSplitOptions.RemoveEmptyEntries)
+					.Select(l => l.TrimEnd('\r')));
+			}
+
+			process.StandardOutput.Close();
+			process.StandardError.Close();
+
+			return new CommandResult(process.ExitCode == 0, output);
+		}
+
+		process.WaitForExit();
+
+		return new CommandResult(process.ExitCode == 0, new List<string>(
+			process.ExitCode == 0 ? [$"{command} command completed successfully"] : [$"{command} command did not complete successfully"])
+		);
 	}
 }

@@ -21,12 +21,32 @@ public class WordPressHandler {
 		}
 
 		this.logger.InfoMessage("Updating wp-config.php");
-		string wpDirShort = this.config.WpDir.Replace(this.config.SiteDir, "");
 		this.fileHandler.FindAndReplaceRegex(
-			Path.Combine(wpDirShort, "wp-config.php"),
+			Path.Combine(this.config.WpDir, "wp-config.php"),
 			@"define\('DB_NAME', '.*?'\);",
 			$"define('DB_NAME', '{this.config.DbName}');"
 		);
+
+		string[] lines = File.ReadAllLines(Path.Combine(this.config.WpDir, "wp-config.php"));
+		List<string> errors = [];
+		if (lines[22].Trim() != $"define('DB_NAME', '{this.config.DbName}');") {
+			errors.Add("DB_NAME");
+		}
+
+		if (lines[25].Trim() != $"define('DB_USER', '{this.config.DbUser}');") {
+			errors.Add("DB_USER");
+		}
+
+		if (lines[31].Trim() != $"define('DB_HOST', '{this.config.DbHost}:{this.config.DbPort}');") {
+			errors.Add("DB_HOST/DB_PORT");
+		}
+
+		if (errors.Count > 0) {
+			this.logger.ErrorMessage($"Problem updating wp-config.php. The following values were not updated correctly: {string.Join(", ", errors)}");
+			Environment.Exit(1);
+		}
+
+		this.logger.SuccessMessage("wp-config.php updated successfully");
 	}
 
 	public void RunCliCommand(string command, bool exitOnFail = false) {
@@ -56,19 +76,20 @@ public class WordPressHandler {
 			string installCommand = string.Join(" ",
 				"core install",
 				$"--url={this.config.SiteUrl}",
-				$"--title={this.config.SiteName}",
+				$"--title='{this.config.SiteName}'",
 				$"--admin_user={this.config.AdminUser}",
 				$"--admin_email={this.config.AdminEmail}",
 				$"--admin_password={this.config.AdminPassword}"
 			);
 			this.RunCliCommand(installCommand, true);
 		}
-		catch (Exception ex) {
+		catch (Exception e) {
 			this.logger.ErrorMessage("Error installing WordPress");
-			this.logger.ErrorMessage(ex.Message);
+			this.logger.ErrorMessage(e.Message);
 			Environment.Exit(1);
 		}
 
+		// FIXME: The output of this is displaying a success message as an error message, but not all RunCliCommand usages are
 		// Set default permalink structure
 		// Required for the REST API to work for automated tests out of the box
 		this.RunCliCommand("rewrite structure '/%postname%/'");
@@ -76,6 +97,7 @@ public class WordPressHandler {
 		// TODO: Check if still true and fix: When running WP-CLI using Git for Windows's shell interpreter, it causes the rewrite to have /C:/Program%20Files/Git/ in it
 
 		// Flush rewrite rules
+		// FIXME: The output of this is displaying a success message as an error message, but not all RunCliCommand usages are
 		this.RunCliCommand("rewrite flush");
 	}
 

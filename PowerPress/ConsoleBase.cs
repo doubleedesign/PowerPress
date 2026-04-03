@@ -19,7 +19,9 @@ public abstract class ConsoleBase {
 		"PromptForText",
 		"PromptForYesOrNo",
 		"PromptForSelection",
-		"DisplayJsonTable"
+		"DisplayJsonTable",
+		"RunCommand",
+		"RunCliCommand"
 	};
 
 	protected ConsoleBase() {
@@ -68,7 +70,7 @@ public abstract class ConsoleBase {
 		int count = 0;
 
 		// Skip frames 0 (this method) and 1 (FormatWithCaller / the public logger method)
-		StackFrame[] frames = new StackTrace(true).GetFrames() ?? Array.Empty<StackFrame>();
+		StackFrame[] frames = new StackTrace(true).GetFrames();
 
 		foreach (StackFrame frame in frames.Skip(2)) {
 			MethodBase? method = frame.GetMethod();

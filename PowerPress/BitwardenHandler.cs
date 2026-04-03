@@ -58,7 +58,7 @@ public class BitwardenHandler {
 
 	private bool CanAccessBitwarden() {
 		if (string.IsNullOrEmpty(this.clientId) || string.IsNullOrEmpty(this.clientSecret)) {
-			this.logger.ErrorMessage("Bitwarden API credentials are not set in environment variables");
+			this.logger.WarningMessage("Bitwarden API credentials are not set in environment variables");
 
 			return false;
 		}
@@ -152,7 +152,7 @@ public class BitwardenHandler {
 	private bool LogOut() {
 		CommandResult result = this.ps.RunCommand("bw", ["logout"]);
 
-		if (!result.Success || result.Output.First() != "You have logged out.") {
+		if (!result.Success || result.Output.First() != "You have logged out of Bitwarden") {
 			this.logger.ErrorMessage(result.Output.First());
 			return false;
 		}

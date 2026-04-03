@@ -1,11 +1,10 @@
-﻿using System.Diagnostics;
-
-namespace PowerPress;
+﻿namespace PowerPress;
 
 public class CanvasRepo {
 	private readonly LocalSiteConfig config;
 	private readonly FileHandler fileHandler;
 	private readonly Logger logger = new();
+	private readonly PowerShellBridge ps = new();
 
 	public CanvasRepo(LocalSiteConfig config) {
 		this.config = config;
@@ -24,14 +23,9 @@ public class CanvasRepo {
 		this.logger.DebugMessage($"Working from {location}");
 
 		// Clone template repo into the site directory
+		// Note: the dot in the args clones the contents directly in, so we don't get a wordpress-canvas folder inside the project folder
 		this.logger.InfoMessage("Cloning template repository from GitHub");
-		Process.Start(new ProcessStartInfo {
-			FileName = "git",
-			// Note: the dot clones the contents directly in, so we don't get a wordpress-canvas folder inside the project folder
-			Arguments = "clone https://github.com/doubleedesign/wordpress-canvas .",
-			WorkingDirectory = this.config.SiteDir,
-			UseShellExecute = false
-		})?.WaitForExit();
+		this.ps.RunProcess("git", "clone https://github.com/doubleedesign/wordpress-canvas .", this.config.SiteDir);
 
 		// Confirm successful clone
 		if (Directory.Exists(Path.Combine(this.config.SiteDir, ".git"))) {

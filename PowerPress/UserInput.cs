@@ -13,8 +13,8 @@ public class UserInput : ConsoleBase {
 
 		(string msg, string caller) = this.FormatWithCaller(formatted);
 
-		this.WriteLine($"\n❓ {msg}", ConsoleColor.Cyan);
-		this.WriteLine($" {caller}", ConsoleColor.DarkGray);
+		this.Write($"\n❔ {msg}", ConsoleColor.Cyan);
+		this.Write($" {caller}\n", ConsoleColor.DarkGray);
 
 		string? input = Console.ReadLine();
 

@@ -12,16 +12,19 @@ public class ComposerHandler {
 
 	public ComposerHandler(LocalSiteConfig config) {
 		this.config = config;
-		this.composerJsonPath = Path.Combine(this.config.WpDir, "composer.json");
-		this.composerJsonDevPath = Path.Combine(this.config.WpDir, "composer.dev.json");
+		this.composerJsonPath = Path.Combine(this.config.SiteDir, "composer.json");
+		this.composerJsonDevPath = Path.Combine(this.config.SiteDir, "composer.dev.json");
 	}
 
 	public void Init() {
+		Directory.SetCurrentDirectory(this.config.SiteDir);
 		this.UpdateProjectInfo(this.composerJsonPath);
 		this.UpdateProjectInfo(this.composerJsonDevPath);
 	}
 
 	private void UpdateComposerJson(string path, string key, string value) {
+		Directory.SetCurrentDirectory(this.config.SiteDir);
+
 		if (!File.Exists(path)) {
 			this.logger.ErrorMessage("File not found: " + path);
 			Environment.Exit(1);
@@ -39,7 +42,29 @@ public class ComposerHandler {
 		File.WriteAllText(path, json.ToJsonString(options));
 	}
 
+	private void RemoveComposerJsonKey(string path, string key) {
+		Directory.SetCurrentDirectory(this.config.SiteDir);
+
+		if (!File.Exists(path)) {
+			this.logger.ErrorMessage("File not found: " + path);
+			Environment.Exit(1);
+		}
+
+		// Read and parse JSON
+		string jsonContent = File.ReadAllText(path);
+		JsonNode json = JsonNode.Parse(jsonContent)!;
+
+		// Remove the key
+		json.AsObject().Remove(key);
+
+		// Convert back to JSON and save
+		JsonSerializerOptions options = new() { WriteIndented = true };
+		File.WriteAllText(path, json.ToJsonString(options));
+	}
+
 	private void UpdateProjectInfo(string path) {
+		Directory.SetCurrentDirectory(this.config.SiteDir);
+
 		if (!File.Exists(path)) {
 			this.logger.ErrorMessage("File not found: " + path);
 			Environment.Exit(1);
@@ -49,9 +74,23 @@ public class ComposerHandler {
 		string originalContent = File.ReadAllText(path);
 
 		this.logger.InfoMessage($"Updating composer.json: {path}");
+
+		// Handle production URL being empty 
+		if (this.config.ProductionUrl == "https://") {
+			this.RemoveComposerJsonKey(path, "homepage"); // empty is not valid for homepage
+		}
+		// ...or having a trailing slash on a valid URL
+		else if (this.config.ProductionUrl.EndsWith('/')) {
+			this.logger.WarningMessage("Production URL should not end with a slash. Removing trailing slash for composer.json update.");
+			this.UpdateComposerJson(path, "homepage", this.config.ProductionUrl.TrimEnd('/'));
+		}
+		else {
+			this.UpdateComposerJson(path, "homepage", this.config.ProductionUrl);
+		}
+
+		// Update other values
 		this.UpdateComposerJson(path, "name", $"doubleedesign/{this.config.SiteSlug}");
 		this.UpdateComposerJson(path, "version", "1.0.0");
-		this.UpdateComposerJson(path, "homepage", this.config.ProductionUrl);
 
 		// Confirm none of the updated keys have empty values
 		JsonNode json = JsonNode.Parse(File.ReadAllText(path))!;
@@ -66,6 +105,8 @@ public class ComposerHandler {
 	}
 
 	public void UpdateDevRepositories(string localPackagesPath) {
+		Directory.SetCurrentDirectory(this.config.SiteDir);
+
 		if (!File.Exists(this.composerJsonDevPath)) {
 			this.logger.ErrorMessage($"File not found: {this.composerJsonDevPath}, skipping repo path updates");
 			return;
@@ -116,7 +157,9 @@ public class ComposerHandler {
 	}
 
 	public void RemoveDependency(string packageName) {
+		Directory.SetCurrentDirectory(this.config.SiteDir);
 		string[] files = [this.composerJsonPath, this.composerJsonDevPath];
+
 		foreach (string file in files) {
 			if (!File.Exists(file)) {
 				this.logger.ErrorMessage($"File not found: {file}, skipping dependency removal");
@@ -145,10 +188,9 @@ public class ComposerHandler {
 		}
 	}
 
-	private void RunCommand(string command) {
-		string[] args = command.Split(' ', StringSplitOptions.RemoveEmptyEntries);
+	public void RunCommand(string command) {
 		Directory.SetCurrentDirectory(this.config.SiteDir);
-		CommandResult result = this.ps.RunCommand("composer", args);
+		CommandResult result = this.ps.RunProcess("pwsh.exe", $"-NoProfile /c composer {command}", this.config.SiteDir);
 
 		if (!result.Success) {
 			this.logger.ErrorMessage(result.Output.First());
@@ -159,7 +201,12 @@ public class ComposerHandler {
 	}
 
 	public void RunInstall() {
-		// TODO: ignore warnings coming from the installed packages
-		this.RunCommand("install");
+		try {
+			this.RunCommand("install");
+		}
+		catch (Exception e) {
+			this.logger.ErrorMessage(e.GetType() + ": " + e.Message);
+			Environment.Exit(1);
+		}
 	}
 }

@@ -84,7 +84,7 @@ if ($Dev) {
 # =============================================================================================================== #
 $Logger.DisplaySectionHeader("Welcome to PowerPress")
 Write-Host "PowerPress is a PowerShell utility to set up Composer-managed WordPress sites `nfor local development on Windows machines." -ForegroundColor Gray
-Write-Host "`nOut of the box, it can be used for new sites or for updating existing sites to `nuse Double-E Design's current and tooling and base suite of plugins." -ForegroundColor Gray
+Write-Host "`nOut of the box, it can be used for new sites or for updating existing sites to `nuse Double-E Design's current tooling and base suite of plugins." -ForegroundColor Gray
 Write-Host "`nPowerPress is open source. You can find the latest documentation, report issues, `ncontribute fixes and improvements, and/or fork the repo to modify it to suit your needs." -ForegroundColor Gray
 Write-Host "Repo URL: https://github.com/doubleedesign/powerpress" -ForegroundColor Gray
 Write-Host "`nPress 'Enter' to start." -ForegroundColor Cyan
@@ -140,7 +140,7 @@ $dbUser = $UI.PromptForText("Enter local database username", "root")
 $dbPass = $UI.PromptForText("Enter local database password", "")
 
 # Save config as a global object so it can be easily passed around to different functions in modules called after its creation
-$SiteConfig = [LocalSiteConfig]::new(
+$SiteConfig = [PowerPress.LocalSiteConfig]::new(
 	$SiteName,
 	$SiteDir,
 	$ProductionUrl,
@@ -191,14 +191,11 @@ $Logger.DisplaySectionFooter()
 
 # =============================================================================================================== #
 $Logger.DisplaySectionHeader("Installation")
-# Instantiate the classes that we need for these steps
 $Canvas = [PowerPress.CanvasRepo]::new($SiteConfig)
 $Composer = [PowerPress.ComposerHandler]::new($SiteConfig)
-$WpHandler = [PowerPress.WordPressHandler]::new($SiteConfig)
-# Initialise WordPress site foundation from template repo and update Composer and WordPress config
+# Initialise WordPress site foundation from template repo and update Composer config
 $Canvas.Init()
 $Composer.Init()
-$WpHandler.UpdateConfig()
 
 # Determine whether to use composer.dev.json and local packages based on env variable set by the -Dev flag, and make the necessary updates
 $willUseDevComposerJson = $env.POWERPRESS_DEV -eq "1"
@@ -219,7 +216,11 @@ else {
 # Install dependencies via Composer
 $Composer.RunInstall()
 
-# Import existing database if applicable, then run WordPress installation
+# Update wp-config
+$WpHandler = [PowerPress.WordPressHandler]::new($SiteConfig)
+$WpHandler.UpdateConfig()
+
+# Import existing database if applicable, or run new WordPress install
 if ($willImportExistingDb) {
 	try {
 		$DbHandler.MaybeImportDb()

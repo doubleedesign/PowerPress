@@ -42,9 +42,15 @@ public class FileHandler {
 		}
 	}
 
-	public void MaybeDeleteFolder(string path, string? prompt = null) {
+	/// <summary>
+	/// </summary>
+	/// <param name="path"></param>
+	/// <param name="prompt"></param>
+	/// <returns>Whether the folder does NOT exist.</returns>
+	public bool MaybeDeleteFolder(string path, string? prompt = null) {
 		if (!Directory.Exists(path)) {
 			this.logger.InfoMessage($"{path} does not exist, skipping deletion");
+			return true;
 		}
 
 		bool proceed = true; // Default if not prompt is provided
@@ -59,7 +65,10 @@ public class FileHandler {
 
 		if (proceed) {
 			this.MoveToRecycleBin(path);
+			return true;
 		}
+
+		return false;
 	}
 
 	public void UpdateProjectReadme() {
@@ -75,6 +84,7 @@ public class FileHandler {
 		}
 
 		try {
+			// FIXME this isn't working
 			this.FindAndReplaceText("README-project.md", "My Project Name", this.config.SiteName);
 			this.FindAndReplaceText("README-project.md", "[Client Name]", this.config.SiteName);
 			// TODO: Add a check to verify the content was actually updated
