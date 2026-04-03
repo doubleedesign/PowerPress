@@ -43,25 +43,31 @@ public abstract class ConsoleBase {
 		Console.ForegroundColor = original;
 	}
 
-	protected FormattedMessage FormatWithCaller(string message, int traceLevels = 1) {
+	protected int GetLineWidth() {
 		int minWidth = 120;
 		int maxWidth = 200;
 		int windowWidth = Console.WindowWidth;
 		int maybeWidth = Math.Max(windowWidth, minWidth);
-		int lineWidth = Console.IsOutputRedirected
+
+		return Console.IsOutputRedirected
 			? minWidth
 			: Math.Min(maybeWidth, maxWidth);
+	}
 
+	protected FormattedMessage FormatWithCaller(string message, int traceLevels = 1) {
 		List<string> callers = this.GetCallingFunctionNames(traceLevels);
 		string caller = string.Concat(callers.Select(c => $"[{c}]"));
+		int lineWidth = this.GetLineWidth();
+
+		int spaceForIcon = 4;
 
 		// If the combined line would wrap, push caller to the next line right-aligned
-		if (message.Length + caller.Length + 6 > lineWidth) {
-			string rightAligned = caller.PadLeft(Math.Max(caller.Length, lineWidth - 6));
+		if (message.Length + caller.Length + spaceForIcon > lineWidth) {
+			string rightAligned = caller.PadLeft(Math.Max(caller.Length, lineWidth - spaceForIcon * 2));
 			return (message.Trim(), $"\n{rightAligned}");
 		}
 
-		string paddedMessage = message.Trim().PadRight(lineWidth - caller.Length - 6);
+		string paddedMessage = message.Trim().PadRight(lineWidth - caller.Length - spaceForIcon);
 		return (paddedMessage, caller);
 	}
 

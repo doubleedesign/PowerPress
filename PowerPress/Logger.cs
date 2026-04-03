@@ -3,8 +3,6 @@
 namespace PowerPress;
 
 public class Logger : ConsoleBase {
-	private const int DividerWidth = 100;
-
 	public void SuccessMessage(string message, int traceLevels = 1) {
 		(string msg, string caller) = this.FormatWithCaller(message, traceLevels);
 		this.Write("✔  ", ConsoleColor.Green);
@@ -57,19 +55,23 @@ public class Logger : ConsoleBase {
 	/// </summary>
 	public void DisplayJsonTable(string json) {
 		try {
+			this.WriteLine("====================================================", ConsoleColor.Gray);
 			using JsonDocument doc = JsonDocument.Parse(json);
 			foreach (JsonProperty prop in doc.RootElement.EnumerateObject()) {
-				this.WriteLine($"{prop.Name}: {prop.Value}", ConsoleColor.Gray);
+				this.WriteLine($"{prop.Name.PadRight(16)} \t {prop.Value}", ConsoleColor.Gray);
 			}
+
+			this.WriteLine("====================================================", ConsoleColor.Gray);
 		}
 		catch {
-			this.ErrorMessage("Failed to parse JSON", 2);
+			this.WarningMessage("Failed to parse JSON for display, skipping", 2);
 		}
 	}
 
 	public void DisplaySectionHeader(string title) {
+		int lineWidth = this.GetLineWidth();
 		string trimmed = title.Trim();
-		int totalPadding = DividerWidth - trimmed.Length - 2;
+		int totalPadding = lineWidth - trimmed.Length - 2;
 		int leftPadding = (int)Math.Floor(totalPadding / 2.0);
 		int rightPadding = (int)Math.Ceiling(totalPadding / 2.0);
 
@@ -78,6 +80,7 @@ public class Logger : ConsoleBase {
 	}
 
 	public void DisplaySectionFooter() {
-		this.WriteLine(new string('=', DividerWidth) + "\n", ConsoleColor.Magenta);
+		int lineWidth = this.GetLineWidth();
+		this.WriteLine(new string('=', lineWidth) + "\n", ConsoleColor.Magenta);
 	}
 }
