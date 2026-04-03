@@ -103,8 +103,17 @@ $DepsHandler.CheckPermissions()
 $useBitwarden = $CredsHandler.MaybeLogIn()
 $Logger.DisplaySectionFooter()
 
+# =============================================================================================================== #
+# TODO: Setup types:
+# - Completely new
+# - Import and update existing site using Canvas repo, Composer, etc
+# - Import existing Composer-managed site as-is
+# - Import existing non-Composer-managed site as-is
+# $Logger.DisplaySectionHeader("Setup type");
+
 
 # =============================================================================================================== #
+# TODO: Split out this bit and others as applicable, for new site vs imported 
 $Logger.DisplaySectionHeader("Base Config");
 $username = $env:USERNAME
 
@@ -407,6 +416,7 @@ $Logger.DisplaySectionFooter()
 
 # =============================================================================================================== #
 $Logger.DisplaySectionHeader("Version control")
+# TODO: For existing sites, check if it is already a Git repo before doing this; if it is commit changes instead 
 Set-Location $SiteConfig.SiteDir
 git init
 git add .
@@ -415,13 +425,14 @@ $Logger.DisplaySectionFooter()
 
 
 # =============================================================================================================== #
-Write-Host "`n ============================ Setup Complete ================================" -ForegroundColor Green
+$Logger.DisplaySectionHeader("Setup complete")
 $siteUrl = $SiteConfig.SiteUrl
 Write-Host "Admin URL: $siteUrl/wp-admin" -ForegroundColor Cyan
 $credentialsSaved = $False
 if (-not $willImportExistingDb -and $useBitwarden) {
 	$credentialsSaved = $CredsHandler.MaybeSaveCredentials($SiteConfig:SiteName, $SiteConfig:SiteUrl, $SiteConfig.AdminUser, $SiteConfig.AdminPassword);
 }
+# TODO: If using Bitwarden but with an imported db, look up the credentials of the production URL and save them for the local URL
 
 Write-Host "You might still need to:" -ForegroundColor Cyan
 Write-Host "`t - Update README.md with project-specific details" -ForegroundColor Cyan
@@ -443,7 +454,7 @@ else {
 }
 Write-Host "`t - Set up your SEO Framework configuration" -ForegroundColor Cyan
 Write-Host "`t - Double-check your permalink settings" -ForegroundColor Cyan
-Write-Host "============================================================================" -ForegroundColor Green
+$Logger.DisplaySectionFooter()
 
 Set-Location $SiteConfig.SiteDir
 try {

@@ -15,15 +15,6 @@
   <component name="ChangeListManager">
     <list default="true" id="b7104dd0-933d-420c-984d-6ffaddda2db4" name="Changes" comment="">
       <change beforePath="$PROJECT_DIR$/.idea/.idea.PowerPress/.idea/workspace.xml" beforeDir="false" afterPath="$PROJECT_DIR$/.idea/.idea.PowerPress/.idea/workspace.xml" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/PowerPress.sln.DotSettings.user" beforeDir="false" afterPath="$PROJECT_DIR$/PowerPress.sln.DotSettings.user" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/PowerPress/BitwardenHandler.cs" beforeDir="false" afterPath="$PROJECT_DIR$/PowerPress/BitwardenHandler.cs" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/PowerPress/CanvasRepo.cs" beforeDir="false" afterPath="$PROJECT_DIR$/PowerPress/CanvasRepo.cs" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/PowerPress/ComposerHandler.cs" beforeDir="false" afterPath="$PROJECT_DIR$/PowerPress/ComposerHandler.cs" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/PowerPress/ConsoleBase.cs" beforeDir="false" afterPath="$PROJECT_DIR$/PowerPress/ConsoleBase.cs" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/PowerPress/FileHandler.cs" beforeDir="false" afterPath="$PROJECT_DIR$/PowerPress/FileHandler.cs" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/PowerPress/PowerShellBridge.cs" beforeDir="false" afterPath="$PROJECT_DIR$/PowerPress/PowerShellBridge.cs" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/PowerPress/UserInput.cs" beforeDir="false" afterPath="$PROJECT_DIR$/PowerPress/UserInput.cs" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/PowerPress/WordPressHandler.cs" beforeDir="false" afterPath="$PROJECT_DIR$/PowerPress/WordPressHandler.cs" afterDir="false" />
       <change beforePath="$PROJECT_DIR$/PowerPress/main.ps1" beforeDir="false" afterPath="$PROJECT_DIR$/PowerPress/main.ps1" afterDir="false" />
     </list>
     <option name="SHOW_DIALOG" value="false" />
@@ -138,6 +129,7 @@
       <workItem from="1775114095729" duration="7540000" />
       <workItem from="1775170293684" duration="11862000" />
       <workItem from="1775204945432" duration="2096000" />
+      <workItem from="1775256721748" duration="881000" />
     </task>
     <servers />
   </component>
