@@ -59,8 +59,8 @@ public class PhpStormHandler {
 			return;
 		}
 
-		string deploymentXmlPath = Path.Combine(".idea", "deployment.xml");
-		string webServersXmlPath = Path.Combine(".idea", "webServers.xml");
+		string deploymentXmlPath = Path.Combine(this.config.SiteDir, ".idea", "deployment.xml");
+		string webServersXmlPath = Path.Combine(this.config.SiteDir, ".idea", "webServers.xml");
 
 
 		// Find YOUR_SERVER_IP in the files and replace it with the provided IP
@@ -95,9 +95,9 @@ public class PhpStormHandler {
 		}
 
 		try {
-			this.fileHandler.FindAndReplaceText(webServersXmlPath, "https://your-production-url", $"https://{productionUrl}");
+			this.fileHandler.FindAndReplaceText(webServersXmlPath, "https://your-production-url", $"{productionUrl}");
 			// TODO: Some kind of verification
-			this.logger.SuccessMessage($"Updated PhpStorm deployment config with production URL https://{productionUrl}");
+			this.logger.SuccessMessage($"Updated PhpStorm deployment config with production URL {productionUrl}");
 		}
 		catch (Exception ex) {
 			this.logger.ErrorMessage("Failed to update PhpStorm deployment config with production URL");

@@ -55,13 +55,13 @@ public class Logger : ConsoleBase {
 	/// </summary>
 	public void DisplayJsonTable(string json) {
 		try {
-			this.WriteLine("====================================================", ConsoleColor.Gray);
+			this.WriteLine("========================================================================", ConsoleColor.Gray);
 			using JsonDocument doc = JsonDocument.Parse(json);
 			foreach (JsonProperty prop in doc.RootElement.EnumerateObject()) {
 				this.WriteLine($"{prop.Name.PadRight(16)} \t {prop.Value}", ConsoleColor.Gray);
 			}
 
-			this.WriteLine("====================================================", ConsoleColor.Gray);
+			this.WriteLine("========================================================================", ConsoleColor.Gray);
 		}
 		catch {
 			this.WarningMessage("Failed to parse JSON for display, skipping", 2);

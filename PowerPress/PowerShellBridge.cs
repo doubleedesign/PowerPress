@@ -82,7 +82,7 @@ public class PowerShellBridge {
 	public CommandResult RunProcess(string command, string args, string workingDirectory, bool verbose = true) {
 		ProcessStartInfo psi = new() {
 			FileName = command,
-			Arguments = args,
+			Arguments = command == "pwsh.exe" ? $"-NoProfile {args}" : args,
 			WorkingDirectory = workingDirectory,
 			UseShellExecute = false,
 			RedirectStandardOutput = !verbose,

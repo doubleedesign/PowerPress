@@ -119,8 +119,6 @@ $username = $env:USERNAME
 
 $defaultProjectsDir = "C:\Users\$username\ClientSites"
 $PROJECTS_DIR = $UI.PromptForText("Enter the path to your website projects directory", $defaultProjectsDir)
-$Logger.InfoMessage("Using projects directory: $PROJECTS_DIR");
-
 $SiteDir = Join-Path $PROJECTS_DIR $SiteName
 $Logger.InfoMessage("Site directory will be: $SiteDir");
 
@@ -184,17 +182,8 @@ $DbHandler = [PowerPress.DatabaseHandler]::new($SiteConfig)
 $FileHandler.SetConfig($SiteConfig)
 
 # Handle database creation if required
-$dbExists = $DbHandler.DbExists()
-if ($DbHandler.DbExists() -eq $true) {
-	$DbHandler.MaybeDropDb()
-	$dropped = $DbHandler.DbExists()
-	if ($dropped -eq $true) {
-		$DbHandler.MaybeCreateDb()
-	}
-}
-else {
-	$DbHandler.MaybeCreateDb()
-}
+$DbHandler.MaybeDropDb()
+$DbHandler.MaybeCreateDb()
 $Logger.DisplaySectionFooter()
 
 
@@ -309,6 +298,7 @@ if (-not $importingWpContent) {
 }
 
 # Activate plugins in the appropriate order (accounting for dependencies some of them have)
+# Note: Comet Calendar is not auto-activated because not all sites require it. It should be either activated or deleted after setup.
 $plugins = @(
 	"advanced-custom-fields-pro",
 	"doublee-local-dev",
@@ -320,8 +310,7 @@ $plugins = @(
 	"autodescription",
 	"simply-disable-comments",
 	"doublee-breadcrumbs"
-	"comet-plugin-blocks",
-	"comet-calendar"
+	"comet-plugin-blocks"
 )
 $pluginsToComposerUpdate = @(
 	"doublee-base-plugin",
@@ -335,15 +324,12 @@ foreach ($plugin in $pluginsToComposerUpdate) {
 	$pluginPath = Join-Path $SiteConfig.WpDir "wp-content\plugins\$plugin"
 	if (Test-Path $pluginPath) {
 		$Logger.InfoMessage("Installing Composer dependencies for $plugin");
-		Set-Location $pluginPath
 		if (-not $willUseDevComposerJson) {
-			$Composer.RunCommand("install --no-dev --prefer-dist --no-cache")
+			$Composer.RunCommand("install --no-dev --prefer-dist --no-cache", $pluginPath)
 		}
 		else {
-			$Composer.RunCommand("install --no-cache")
+			$Composer.RunCommand("install --no-cache", $pluginPath)
 		}
-
-		Set-Location $SiteConfig.WpDir
 	}
 }
 
@@ -354,7 +340,7 @@ foreach ($plugin in $plugins) {
 		$WpHandler.RunCliCommand("plugin activate $plugin")
 	}
 	else {
-		$Logger.WarningMessage("Plugin $plugin not found in expected path $pluginPath. Skipping activation.");
+		$Logger.WarningMessage("Plugin $plugin not found. Skipping activation.");
 	}
 }
 
@@ -367,16 +353,20 @@ else {
 	$Logger.InfoMessage("Using ACF Pro licence key from user environment variables: $defaultAcfProKey");
 	$Logger.InfoMessage("This is assumed to be a key for a lifetime developer licence. If it isn't, just go and resave it in the admin after setup is complete.");
 }
-$tomorrow = [DateTimeOffset]::new((Get-Date).AddDays(1).ToUniversalTime()).ToUnixTimeSeconds()
-$WpHandler.RunCliCommand("option update acf_pro_license '$acfProKey'")
-# FIXME these are erroring
-$WpHandler.RunCliCommand("option patch insert acf_pro_license_status status 'active'")
-$WpHandler.RunCliCommand("option patch insert acf_pro_license_status lifetime 1")
-$WpHandler.RunCliCommand("option patch insert acf_pro_license_status refunded 0")
-$WpHandler.RunCliCommand("option patch insert acf_pro_license_status name 'Developer'")
-$WpHandler.RunCliCommand("option patch insert acf_pro_license_status next_check $tomorrow")
+if (-not [string]::IsNullOrEmpty($acfProKey)) {
+	$tomorrow = [DateTimeOffset]::new((Get-Date).AddDays(1).ToUniversalTime()).ToUnixTimeSeconds()
+	$WpHandler.RunCliCommand("option update acf_pro_license '$acfProKey'")
+	# FIXME these are erroring
+	$WpHandler.RunCliCommand("option patch insert acf_pro_license_status status 'active'")
+	$WpHandler.RunCliCommand("option patch insert acf_pro_license_status lifetime 1")
+	$WpHandler.RunCliCommand("option patch insert acf_pro_license_status refunded 0")
+	$WpHandler.RunCliCommand("option patch insert acf_pro_license_status name 'Developer'")
+	$WpHandler.RunCliCommand("option patch insert acf_pro_license_status next_check $tomorrow")
+}
+else {
+	$Logger.WarningMessage("ACF Pro licence key is empty. Skipping acivation.");
+}
 
-# Check if Ninja Forms is active
 wp plugin is-active ninja-forms
 $ninjaFormsActive = $LASTEXITCODE -eq 0
 if ($ninjaFormsActive) {
@@ -423,7 +413,6 @@ git add .
 git commit -m "Set up site from WordPress Canvas template using PowerPress"
 $Logger.DisplaySectionFooter()
 
-
 # =============================================================================================================== #
 $Logger.DisplaySectionHeader("Setup complete")
 $siteUrl = $SiteConfig.SiteUrl
@@ -431,8 +420,9 @@ Write-Host "Admin URL: $siteUrl/wp-admin" -ForegroundColor Cyan
 $credentialsSaved = $False
 if (-not $willImportExistingDb -and $useBitwarden) {
 	$credentialsSaved = $CredsHandler.MaybeSaveCredentials($SiteConfig:SiteName, $SiteConfig:SiteUrl, $SiteConfig.AdminUser, $SiteConfig.AdminPassword);
+	$CredsHandler.MaybeLogOut()
+	# TODO: If using Bitwarden but with an imported db, look up the credentials of the production URL and save them for the local URL
 }
-# TODO: If using Bitwarden but with an imported db, look up the credentials of the production URL and save them for the local URL
 
 Write-Host "You might still need to:" -ForegroundColor Cyan
 Write-Host "`t - Update README.md with project-specific details" -ForegroundColor Cyan
@@ -473,6 +463,4 @@ catch {
 	$Logger.WarningMessage("Could not automatically open the project in PhpStorm :(");
 }
 
-# Cleanup
-$CredsHandler.MaybeLogOut()
 Set-Location $scriptLocation

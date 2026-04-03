@@ -19,9 +19,13 @@ public class CanvasRepo {
 		}
 
 		Directory.SetCurrentDirectory(this.config.SiteDir);
-		string location = Directory.GetCurrentDirectory();
-		this.logger.DebugMessage($"Working from {location}");
+		this.logger.DebugMessage($"Working from {Directory.GetCurrentDirectory()}");
 
+		this.CloneFromRemote();
+		this.CleanupAfterClone();
+	}
+
+	private void CloneFromRemote() {
 		// Clone template repo into the site directory
 		// Note: the dot in the args clones the contents directly in, so we don't get a wordpress-canvas folder inside the project folder
 		this.logger.InfoMessage("Cloning template repository from GitHub");
@@ -35,7 +39,9 @@ public class CanvasRepo {
 			this.logger.ErrorMessage("Failed to clone template repository into site directory");
 			Environment.Exit(1);
 		}
+	}
 
+	private void CleanupAfterClone() {
 		// Delete template repo's git directory and some other files we don't need or are going to refresh anyway
 		string[] toDelete = [".git", "sql", "composer.lock", "composer.dev.lock", "app/wp-content/uploads"];
 		foreach (string item in toDelete) {

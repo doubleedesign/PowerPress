@@ -1,4 +1,4 @@
-﻿using System.Text.Json;
+using System.Text.Json;
 
 namespace PowerPress;
 
@@ -49,10 +49,12 @@ public class WordPressHandler {
 		this.logger.SuccessMessage("wp-config.php updated successfully");
 	}
 
-	public void RunCliCommand(string command, bool exitOnFail = false) {
+	public void RunCliCommand(string command, bool skipPluginsAndThemes = true, bool exitOnFail = false) {
 		string[] args = command.Split(' ', StringSplitOptions.RemoveEmptyEntries);
 		Directory.SetCurrentDirectory(this.config.WpDir);
-		CommandResult result = this.ps.RunCommand("wp", ["--skip-plugins", "--skip-themes", ..args]);
+		CommandResult result = skipPluginsAndThemes
+			? this.ps.RunCommand("wp", ["--skip-plugins", "--skip-themes", ..args])
+			: this.ps.RunCommand("wp", [..args]);
 
 		if (!result.Success) {
 			this.logger.ErrorMessage(result.Output.First());
@@ -62,6 +64,14 @@ public class WordPressHandler {
 
 			return;
 		}
+
+		if (result.Output.Count > 0 && result.Output.First().Equals("Success: Updated 'ninja_forms_settings' option.")) {
+			string optionName = args.Reverse().Skip(1).First();
+			string optionValue = args.Reverse().First();
+			this.logger.SuccessMessage($"Updated 'ninja_forms_settings' option {optionName} to {optionValue}");
+			return;
+		}
+		// TODO: Also handle ACF option value success messages
 
 		this.logger.SuccessMessage(result.Output.First());
 	}
@@ -76,12 +86,12 @@ public class WordPressHandler {
 			string installCommand = string.Join(" ",
 				"core install",
 				$"--url={this.config.SiteUrl}",
-				$"--title='{this.config.SiteName}'",
+				$"--title=\"{this.config.SiteName}\"",
 				$"--admin_user={this.config.AdminUser}",
 				$"--admin_email={this.config.AdminEmail}",
 				$"--admin_password={this.config.AdminPassword}"
 			);
-			this.RunCliCommand(installCommand, true);
+			this.RunCliCommand(installCommand);
 		}
 		catch (Exception e) {
 			this.logger.ErrorMessage("Error installing WordPress");
@@ -125,9 +135,9 @@ public class WordPressHandler {
 			string command = string.Join(" ",
 				"scaffold child-theme",
 				themeDirectoryName,
-				$"--theme_name={siteName}",
+				$"--theme_name=\"{siteName}\"",
 				"--parent_theme=comet-canvas-blocks",
-				$"--author={authorName}",
+				$"--author=\"{authorName}\"",
 				$"--author_uri={authorUri}",
 				$"--theme_uri={themeUri}",
 				"--activate"
@@ -157,7 +167,7 @@ public class WordPressHandler {
 
 	public void MaybeRemovePlugin(string ifInstalled, string thenRemove) {
 		if (!Directory.Exists(Path.Combine(this.config.WpDir, ifInstalled))) {
-			this.logger.WarningMessage($"Plugin {ifInstalled} is not present, skipping removal");
+			this.logger.InfoMessage($"Plugin {ifInstalled} is not present, skipping removal");
 			return;
 		}
 

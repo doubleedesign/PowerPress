@@ -13,7 +13,7 @@ public class UserInput : ConsoleBase {
 
 		(string msg, string caller) = this.FormatWithCaller(formatted);
 
-		this.Write($"\n❔ {msg}", ConsoleColor.Cyan);
+		this.Write($"❔ {msg}", ConsoleColor.Cyan);
 		this.Write($" {caller}\n", ConsoleColor.DarkGray);
 
 		string? input = Console.ReadLine();
@@ -42,7 +42,7 @@ public class UserInput : ConsoleBase {
 
 		(string msg, string caller) = this.FormatWithCaller(message);
 
-		this.Write($"\n❔ {msg}", ConsoleColor.Cyan);
+		this.Write($"❔ {msg}", ConsoleColor.Cyan);
 		this.Write($" {caller}\n", ConsoleColor.DarkGray);
 
 		while (true) {
@@ -77,7 +77,7 @@ public class UserInput : ConsoleBase {
 
 		(string msg, string caller) = this.FormatWithCaller(message);
 
-		this.Write($"\n❔ {msg}", ConsoleColor.Cyan);
+		this.Write($"❔ {msg}", ConsoleColor.Cyan);
 		this.Write($" {caller}\n", ConsoleColor.DarkGray);
 
 		while (true) {

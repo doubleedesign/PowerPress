@@ -56,7 +56,7 @@ public class DatabaseHandler {
 		return false;
 	}
 
-	public bool DbExists() {
+	private bool DbExists() {
 		List<Dictionary<string, object>> results = this.ExecuteQuery($"SELECT 1 FROM information_schema.schemata WHERE schema_name = '{this.config.DbName}'");
 		if (results.Count > 0) {
 			return true;

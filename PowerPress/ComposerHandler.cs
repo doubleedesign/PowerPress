@@ -9,6 +9,7 @@ public class ComposerHandler {
 	private readonly LocalSiteConfig config;
 	private readonly Logger logger = new();
 	private readonly PowerShellBridge ps = new();
+	private readonly UserInput ui = new();
 
 	public ComposerHandler(LocalSiteConfig config) {
 		this.config = config;
@@ -73,7 +74,7 @@ public class ComposerHandler {
 		// Save original content in case we need to revert
 		string originalContent = File.ReadAllText(path);
 
-		this.logger.InfoMessage($"Updating composer.json: {path}");
+		this.logger.InfoMessage($"Updating Composer file: {path}");
 
 		// Handle production URL being empty 
 		if (this.config.ProductionUrl == "https://") {
@@ -101,6 +102,9 @@ public class ComposerHandler {
 			this.logger.ErrorMessage("One or more of the required composer.json keys have empty or invalid values");
 			this.logger.WarningMessage("Reverting composer.json to original content. Please troubleshoot the UpdateComposerJson step before running again.");
 			File.WriteAllText(path, originalContent);
+		}
+		else {
+			this.logger.SuccessMessage("Updated Composer config file");
 		}
 	}
 
@@ -188,9 +192,10 @@ public class ComposerHandler {
 		}
 	}
 
-	public void RunCommand(string command) {
-		Directory.SetCurrentDirectory(this.config.SiteDir);
-		CommandResult result = this.ps.RunProcess("pwsh.exe", $"-NoProfile /c composer {command}", this.config.SiteDir);
+	public void RunCommand(string command, string? workingDir = null) {
+		Directory.SetCurrentDirectory(workingDir ?? this.config.SiteDir);
+		this.logger.InfoMessage($"Working from: {Directory.GetCurrentDirectory()}");
+		CommandResult result = this.ps.RunProcess("pwsh.exe", $"/c composer {command}", Directory.GetCurrentDirectory());
 
 		if (!result.Success) {
 			this.logger.ErrorMessage(result.Output.First());

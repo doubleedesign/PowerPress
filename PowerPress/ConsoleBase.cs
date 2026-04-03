@@ -63,7 +63,7 @@ public abstract class ConsoleBase {
 
 		// If the combined line would wrap, push caller to the next line right-aligned
 		if (message.Length + caller.Length + spaceForIcon > lineWidth) {
-			string rightAligned = caller.PadLeft(Math.Max(caller.Length, lineWidth - spaceForIcon * 2));
+			string rightAligned = caller.PadLeft(lineWidth);
 			return (message.Trim(), $"\n{rightAligned}");
 		}
 

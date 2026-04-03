@@ -84,11 +84,16 @@ public class FileHandler {
 		}
 
 		try {
-			// FIXME this isn't working
-			this.FindAndReplaceText("README-project.md", "My Project Name", this.config.SiteName);
-			this.FindAndReplaceText("README-project.md", "[Client Name]", this.config.SiteName);
-			// TODO: Add a check to verify the content was actually updated
-			this.logger.SuccessMessage("Updated README-project.md with project name");
+			string projectTemplate = Path.Combine(this.config.SiteDir, "README-project.md");
+			this.FindAndReplaceText(projectTemplate, "My Project Name", this.config.SiteName);
+			this.FindAndReplaceText(projectTemplate, "[Client Name]", this.config.SiteName);
+			string firstLine = this.GetFirstLineText(projectTemplate);
+			if (firstLine == $"# {this.config.SiteName}") {
+				this.logger.SuccessMessage($"First line of README is now {firstLine}");
+			}
+			else {
+				this.logger.WarningMessage($"First line of README is now {firstLine}. If this is not correct, edit README.md manually.");
+			}
 		}
 		catch (Exception e) {
 			this.logger.ErrorMessage("Failed to update README-project.md");
@@ -98,13 +103,23 @@ public class FileHandler {
 		try {
 			string projectTemplate = Path.Combine(this.config.SiteDir, "README-project.md");
 			File.Move(projectTemplate, readmeFile);
-			// TODO: Add a check to verify
-			this.logger.SuccessMessage("Updated README.md with project template");
+			if (this.GetFirstLineText(readmeFile) == $"# {this.config.SiteName}") {
+				this.logger.SuccessMessage("Updated README with project template");
+			}
+			else {
+				this.logger.WarningMessage("README update does not seem to have completed correctly and may need manual fixing.");
+			}
 		}
 		catch (Exception e) {
 			this.logger.ErrorMessage("Failed to save new README.md from template");
 			this.logger.ErrorMessage(e.Message);
 		}
+	}
+
+	private string GetFirstLineText(string filePath) {
+		string[] lines = File.ReadAllLines(filePath);
+
+		return lines[0];
 	}
 
 	public void MoveToRecycleBin(string path) {
@@ -172,6 +187,6 @@ public class FileHandler {
 			throw new IOException($"Failed to copy directory from {source} to {dest}");
 		}
 
-		this.logger.SuccessMessage($"Copied directory from {source} to {dest}");
+		this.logger.SuccessMessage($"Copied directory from {source} \n \t \tto {dest}");
 	}
 }
