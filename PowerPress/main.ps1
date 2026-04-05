@@ -100,7 +100,7 @@ $DepsHandler.CheckPermissions()
 
 # BitWarden CLI is treated a little differently than other dependencies because we need to check env variables as well as the command,
 # and it makes sense to log in at the same time to avoid checking "can access Bitwarden" multiple times
-$useBitwarden = $CredsHandler.MaybeLogIn()
+$useBitwarden = $CredsHandler.MaybeLogIn() # FIXME getting an error here
 $Logger.DisplaySectionFooter()
 
 # =============================================================================================================== #
@@ -358,7 +358,8 @@ else {
 	$Logger.InfoMessage("Using ACF Pro licence key from user environment variables: $defaultAcfProKey");
 }
 if (-not [string]::IsNullOrEmpty($acfProKey)) {
-	$WpHandler.DangerouslyRunFunction("acf_pro_update_license", $acfProKey)
+	# FIXME: Getting rogue "this is not a WP installation" console output after this runs, but it is running fine and I don't know where it's coming from
+	$WpHandler.DangerouslyRunFunction("acf_pro_update_license", $acfProKey) | Out-Null
 }
 else {
 	$Logger.WarningMessage("ACF Pro licence key is empty. Skipping licence acivation.");
@@ -412,14 +413,14 @@ $Logger.DisplaySectionFooter()
 
 # =============================================================================================================== #
 $Logger.DisplaySectionHeader("Setup complete")
-$siteUrl = $SiteConfig.SiteUrl
-Write-Host "Admin URL: $siteUrl/wp-admin" -ForegroundColor Cyan
 $credentialsSaved = $False
 if (-not $willImportExistingDb -and $useBitwarden) {
-	$credentialsSaved = $CredsHandler.MaybeSaveCredentials($SiteConfig:SiteName, $SiteConfig:SiteUrl, $SiteConfig.AdminUser, $SiteConfig.AdminPassword);
+	$credentialsSaved = $CredsHandler.MaybeSaveCredentials($SiteConfig:SiteName, $SiteConfig:SiteUrl, $SiteConfig.AdminUser, $SiteConfig.AdminPassword)
 	$CredsHandler.MaybeLogOut()
 	# TODO: If using Bitwarden but with an imported db, look up the credentials of the production URL and save them for the local URL
 }
+$siteUrl = $SiteConfig.SiteUrl
+Write-Host "Admin URL: $siteUrl/wp-admin" -ForegroundColor Cyan
 
 Write-Host "You might still need to:" -ForegroundColor Cyan
 Write-Host "`t - Update README.md with project-specific details" -ForegroundColor Cyan
@@ -445,7 +446,6 @@ $Logger.DisplaySectionFooter()
 
 Set-Location $SiteConfig.SiteDir
 try {
-	$Logger.InfoMessage("Launching WP Admin in browser");
 	Start-Process "$siteUrl/wp-admin"
 }
 catch {

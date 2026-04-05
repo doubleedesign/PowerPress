@@ -98,12 +98,13 @@ public class BitwardenHandler {
 	private bool Unlock() {
 		CommandResult result = this.ps.RunCommand("bw", ["unlock", "--passwordenv", "BW_PASSWORD"]);
 		if (!result.Success) {
-			this.logger.ErrorMessage(result.Output.First());
+			this.logger.ErrorMessage(result.Output.Count > 0 ? result.Output.First() : "Could not unlock Bitwarden vault");
 			return false;
 		}
 
-		if (!result.Output.First().Equals("Your vault is now unlocked!")) {
+		if (result.Output.Count == 0 || (result.Output.Count > 0 && !result.Output.First().Equals("Your vault is now unlocked!"))) {
 			this.logger.ErrorMessage($"Unexpected output from bw unlock: {result.Output.First()}");
+			return false;
 		}
 
 		try {
@@ -152,9 +153,14 @@ public class BitwardenHandler {
 	private bool LogOut() {
 		CommandResult result = this.ps.RunCommand("bw", ["logout"]);
 
-		if (!result.Success || result.Output.First() != "You have logged out of Bitwarden") {
+		if (!result.Success) {
 			this.logger.ErrorMessage(result.Output.First());
 			return false;
+		}
+
+		if (result.Output.First().Trim() == "You have logged out.") {
+			this.logger.SuccessMessage("Logged out of Bitwarden");
+			return true;
 		}
 
 		this.logger.SuccessMessage(result.Output.First());

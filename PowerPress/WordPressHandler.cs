@@ -230,11 +230,18 @@ public class WordPressHandler {
 		string tempFile = Path.Combine(Path.GetTempPath(), $"wp_eval_{Guid.NewGuid():N}.php");
 
 		try {
+			this.logger.InfoMessage("Creating temporary PHP script to run:\n" + phpCode);
 			File.WriteAllText(tempFile, $"<?php \n{phpCode}");
 			this.RunCliCommand($"eval-file {tempFile}", true, exitOnFail);
 		}
 		finally {
-			if (File.Exists(tempFile)) File.Delete(tempFile);
+			if (File.Exists(tempFile)) {
+				File.Delete(tempFile);
+			}
+
+			if (!File.Exists(tempFile)) {
+				this.logger.SuccessMessage("Deleted temp file");
+			}
 		}
 	}
 }

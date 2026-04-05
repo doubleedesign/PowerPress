@@ -82,6 +82,10 @@ public class PowerShellBridge {
 			errors = errors.Where(e => {
 				string trimmed = e.Trim();
 
+				if (trimmed.StartsWith("Comet Components core config") || trimmed.StartsWith("PHP Notice:  Function add_theme_support( 'title-tag' ) was called <strong>incorrectly</strong>.")) {
+					return false;
+				}
+
 				if (trimmed.StartsWith("Warning:") || trimmed.StartsWith("PHP Warning:")) {
 					this.logger.WarningMessage(e);
 					return false;
@@ -89,10 +93,6 @@ public class PowerShellBridge {
 
 				if (trimmed.StartsWith("Notice:") || trimmed.StartsWith("PHP Notice:")) {
 					this.logger.WarningMessage(e);
-					return false;
-				}
-
-				if (trimmed.StartsWith("Comet Components core config")) {
 					return false;
 				}
 

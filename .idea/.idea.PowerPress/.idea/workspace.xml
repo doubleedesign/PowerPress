@@ -15,10 +15,10 @@
   <component name="ChangeListManager">
     <list default="true" id="b7104dd0-933d-420c-984d-6ffaddda2db4" name="Changes" comment="">
       <change beforePath="$PROJECT_DIR$/.idea/.idea.PowerPress/.idea/workspace.xml" beforeDir="false" afterPath="$PROJECT_DIR$/.idea/.idea.PowerPress/.idea/workspace.xml" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/PowerPress.sln.DotSettings.user" beforeDir="false" afterPath="$PROJECT_DIR$/PowerPress.sln.DotSettings.user" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/PowerPress/BitwardenHandler.cs" beforeDir="false" afterPath="$PROJECT_DIR$/PowerPress/BitwardenHandler.cs" afterDir="false" />
       <change beforePath="$PROJECT_DIR$/PowerPress/DatabaseHandler.cs" beforeDir="false" afterPath="$PROJECT_DIR$/PowerPress/DatabaseHandler.cs" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/PowerPress/FileHandler.cs" beforeDir="false" afterPath="$PROJECT_DIR$/PowerPress/FileHandler.cs" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/PowerPress/PhpStormHandler.cs" beforeDir="false" afterPath="$PROJECT_DIR$/PowerPress/PhpStormHandler.cs" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/PowerPress/UserInput.cs" beforeDir="false" afterPath="$PROJECT_DIR$/PowerPress/UserInput.cs" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/PowerPress/PowerShellBridge.cs" beforeDir="false" afterPath="$PROJECT_DIR$/PowerPress/PowerShellBridge.cs" afterDir="false" />
       <change beforePath="$PROJECT_DIR$/PowerPress/WordPressHandler.cs" beforeDir="false" afterPath="$PROJECT_DIR$/PowerPress/WordPressHandler.cs" afterDir="false" />
       <change beforePath="$PROJECT_DIR$/PowerPress/main.ps1" beforeDir="false" afterPath="$PROJECT_DIR$/PowerPress/main.ps1" afterDir="false" />
     </list>
@@ -40,8 +40,6 @@
     <option name="RECENT_GIT_ROOT_PATH" value="$PROJECT_DIR$" />
   </component>
   <component name="HighlightingSettingsPerFile">
-    <setting file="file://$USER_HOME$/PhpStormProjects/wordpress-canvas/composer.dev.json" root0="FORCE_HIGHLIGHTING" />
-    <setting file="file://$USER_HOME$/PhpStormProjects/wordpress-canvas/composer.json" root0="FORCE_HIGHLIGHTING" />
     <setting file="file://$PROJECT_DIR$/PowerPress/ComposerHandler.cs" root0="FORCE_HIGHLIGHTING" />
     <setting file="file://$PROJECT_DIR$/PowerPress/DatabaseHandler.cs" root0="FORCE_HIGHLIGHTING" />
     <setting file="file://$PROJECT_DIR$/PowerPress/FileHandler.cs" root0="FORCE_HIGHLIGHTING" />
@@ -54,6 +52,14 @@
     <setting file="file://$PROJECT_DIR$/PowerPress/obj/Debug/net10.0/PowerPress.sourcelink.json" root0="FORCE_HIGHLIGHTING" />
     <setting file="file://$PROJECT_DIR$/PowerPress/obj/PowerPress.csproj.nuget.dgspec.json" root0="FORCE_HIGHLIGHTING" />
     <setting file="file://$PROJECT_DIR$/PowerPress/obj/project.packagespec.json" root0="FORCE_HIGHLIGHTING" />
+    <setting file="file://$APPLICATION_CONFIG_DIR$/resharper-host/SourcesCache/23c728fc44db7fb9ceecaa21c293ddc28df38d0c317c3115e7b284d942fe842/IOException.cs" root0="FORCE_HIGHLIGHTING" />
+    <setting file="file://$APPLICATION_CONFIG_DIR$/resharper-host/SourcesCache/2732d66c405b45d5f571abc2f54458cac1facd4829d999e48b33d25d7866e83/Random.cs" root0="SKIP_HIGHLIGHTING" />
+    <setting file="file://$APPLICATION_CONFIG_DIR$/resharper-host/SourcesCache/29ff4eecbec3445d30cf6be51b75c75bc14f83445c042e746c738e76cd8bb/ThrowHelper.cs" root0="FORCE_HIGHLIGHTING" />
+    <setting file="file://$APPLICATION_CONFIG_DIR$/resharper-host/SourcesCache/3914f7ebc34c43728421d169ef908562a670a2de6c825182e7116468f781261/FileSystem.DirectoryCreation.Windows.cs" root0="SKIP_HIGHLIGHTING" />
+    <setting file="file://$APPLICATION_CONFIG_DIR$/resharper-host/SourcesCache/c98e302e5c785178e79f5d5fec851ebd9ec7fe7ccfb299b83df0717c48a68640/ProcessStartInfo.Win32.cs" root0="FORCE_HIGHLIGHTING" />
+    <setting file="file://$APPLICATION_CONFIG_DIR$/resharper-host/SourcesCache/f87fe443c817f5c5221c89db6b9a7ac0d8923bb781cdf4aaffe1974f3b88eb2/Directory.cs" root0="SKIP_HIGHLIGHTING" />
+    <setting file="file://$USER_HOME$/PhpStormProjects/wordpress-canvas/composer.dev.json" root0="FORCE_HIGHLIGHTING" />
+    <setting file="file://$USER_HOME$/PhpStormProjects/wordpress-canvas/composer.json" root0="FORCE_HIGHLIGHTING" />
   </component>
   <component name="MetaFilesCheckinStateConfiguration" checkMetaFiles="true" />
   <component name="ProblemsViewState">
@@ -68,28 +74,28 @@
     <option name="showLibraryContents" value="true" />
     <option name="showMembers" value="true" />
   </component>
-  <component name="PropertiesComponent">{
-  &quot;keyToString&quot;: {
-    &quot;.NET Project.PowerPress.executor&quot;: &quot;Debug&quot;,
-    &quot;ASKED_SHARE_PROJECT_CONFIGURATION_FILES&quot;: &quot;true&quot;,
-    &quot;ModuleVcsDetector.initialDetectionPerformed&quot;: &quot;true&quot;,
-    &quot;RunOnceActivity.ShowReadmeOnStart&quot;: &quot;true&quot;,
-    &quot;RunOnceActivity.TerminalTabsStorage.copyFrom.TerminalArrangementManager.252&quot;: &quot;true&quot;,
-    &quot;RunOnceActivity.cidr.known.project.marker&quot;: &quot;true&quot;,
-    &quot;RunOnceActivity.git.unshallow&quot;: &quot;true&quot;,
-    &quot;RunOnceActivity.readMode.enableVisualFormatting&quot;: &quot;true&quot;,
-    &quot;cidr.known.project.marker&quot;: &quot;true&quot;,
-    &quot;codeWithMe.voiceChat.enabledByDefault&quot;: &quot;false&quot;,
-    &quot;com.intellij.ml.llm.matterhorn.ej.ui.settings.DefaultModelSelectionForGA.v1&quot;: &quot;true&quot;,
-    &quot;git-widget-placeholder&quot;: &quot;master&quot;,
-    &quot;ignore.virus.scanning.warn.message&quot;: &quot;true&quot;,
-    &quot;junie.onboarding.icon.badge.shown&quot;: &quot;true&quot;,
-    &quot;rider.code.cleanup.on.save&quot;: &quot;true&quot;,
-    &quot;settings.editor.selected.configurable&quot;: &quot;preferences.sourceCode.C#&quot;,
-    &quot;to.speed.mode.migration.done&quot;: &quot;true&quot;
+  <component name="PropertiesComponent"><![CDATA[{
+  "keyToString": {
+    ".NET Project.PowerPress.executor": "Run",
+    "ASKED_SHARE_PROJECT_CONFIGURATION_FILES": "true",
+    "ModuleVcsDetector.initialDetectionPerformed": "true",
+    "RunOnceActivity.ShowReadmeOnStart": "true",
+    "RunOnceActivity.TerminalTabsStorage.copyFrom.TerminalArrangementManager.252": "true",
+    "RunOnceActivity.cidr.known.project.marker": "true",
+    "RunOnceActivity.git.unshallow": "true",
+    "RunOnceActivity.readMode.enableVisualFormatting": "true",
+    "cidr.known.project.marker": "true",
+    "codeWithMe.voiceChat.enabledByDefault": "false",
+    "com.intellij.ml.llm.matterhorn.ej.ui.settings.DefaultModelSelectionForGA.v1": "true",
+    "git-widget-placeholder": "master",
+    "ignore.virus.scanning.warn.message": "true",
+    "junie.onboarding.icon.badge.shown": "true",
+    "rider.code.cleanup.on.save": "true",
+    "settings.editor.selected.configurable": "preferences.sourceCode.C#",
+    "to.speed.mode.migration.done": "true"
   }
-}</component>
-  <component name="RunManager">
+}]]></component>
+  <component name="RunManager" selected=".NET Project.PowerPress">
     <configuration name="PowerPress" type="DotNetProject" factoryName=".NET Project">
       <option name="EXE_PATH" value="" />
       <option name="PROGRAM_PARAMETERS" value="" />
@@ -157,6 +163,19 @@
           <properties exception="System.Threading.ThreadAbortException" breakIfHandledByOtherCode="false" displayValue="System.Threading.ThreadAbortException" />
           <option name="timeStamp" value="3" />
         </breakpoint>
+        <line-breakpoint enabled="true" type="DotNet Breakpoints">
+          <url>file://$PROJECT_DIR$/PowerPress/PowerShellBridge.cs</url>
+          <line>106</line>
+          <properties documentPath="C:\Users\leesa\.config\herd\bin\PowerPress\PowerPress\PowerShellBridge.cs" containingFunctionPresentation="Method 'RunCommand'">
+            <startOffsets>
+              <option value="3271" />
+            </startOffsets>
+            <endOffsets>
+              <option value="3348" />
+            </endOffsets>
+          </properties>
+          <option name="timeStamp" value="6" />
+        </line-breakpoint>
       </breakpoints>
     </breakpoint-manager>
     <watches-manager>
