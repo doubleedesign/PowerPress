@@ -76,6 +76,34 @@ public class PowerShellBridge {
 		this.ps.Commands.Clear();
 		this.ps.Streams.Error.Clear();
 
+		if (errors.Count > 0) {
+			// Filter out errors we don't want to treat as errors,
+			// logging them to the console appropriately along the way (or in a small number of cases, ignoring them)
+			errors = errors.Where(e => {
+				string trimmed = e.Trim();
+
+				if (trimmed.StartsWith("Warning:") || trimmed.StartsWith("PHP Warning:")) {
+					this.logger.WarningMessage(e);
+					return false;
+				}
+
+				if (trimmed.StartsWith("Notice:") || trimmed.StartsWith("PHP Notice:")) {
+					this.logger.WarningMessage(e);
+					return false;
+				}
+
+				if (trimmed.StartsWith("Comet Components core config")) {
+					return false;
+				}
+
+				return true;
+			}).ToList();
+		}
+
+		if (errors.Count > 0) {
+			this.logger.DebugMessage($"{errors.Count} errors/warnings not filtered out:\n {string.Join("\n", errors)}");
+		}
+
 		return new CommandResult(errors.Count == 0, results.Concat(errors).ToList());
 	}
 

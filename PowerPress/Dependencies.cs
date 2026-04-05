@@ -57,7 +57,7 @@ public class Dependencies {
 	}
 
 	private bool CheckWpCliCommands() {
-		string[] commands = ["core", "scaffold", "option", "db", "search-replace", "plugin", "theme", "rewrite"];
+		string[] commands = ["core", "scaffold", "option", "db", "search-replace", "plugin", "theme", "rewrite", "eval"];
 		List<string> missing = [];
 
 		foreach (string command in commands) {

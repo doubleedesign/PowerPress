@@ -351,20 +351,12 @@ if ( [string]::IsNullOrEmpty($defaultAcfProKey)) {
 else {
 	$acfProKey = $defaultAcfProKey
 	$Logger.InfoMessage("Using ACF Pro licence key from user environment variables: $defaultAcfProKey");
-	$Logger.InfoMessage("This is assumed to be a key for a lifetime developer licence. If it isn't, just go and resave it in the admin after setup is complete.");
 }
 if (-not [string]::IsNullOrEmpty($acfProKey)) {
-	$tomorrow = [DateTimeOffset]::new((Get-Date).AddDays(1).ToUniversalTime()).ToUnixTimeSeconds()
-	$WpHandler.RunCliCommand("option update acf_pro_license '$acfProKey'")
-	# FIXME these are erroring
-	$WpHandler.RunCliCommand("option patch insert acf_pro_license_status status 'active'")
-	$WpHandler.RunCliCommand("option patch insert acf_pro_license_status lifetime 1")
-	$WpHandler.RunCliCommand("option patch insert acf_pro_license_status refunded 0")
-	$WpHandler.RunCliCommand("option patch insert acf_pro_license_status name 'Developer'")
-	$WpHandler.RunCliCommand("option patch insert acf_pro_license_status next_check $tomorrow")
+	$WpHandler.DangerouslyRunFunction("acf_pro_update_license", $acfProKey)
 }
 else {
-	$Logger.WarningMessage("ACF Pro licence key is empty. Skipping acivation.");
+	$Logger.WarningMessage("ACF Pro licence key is empty. Skipping licence acivation.");
 }
 
 wp plugin is-active ninja-forms

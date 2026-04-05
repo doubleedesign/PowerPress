@@ -1,4 +1,4 @@
-using System.Text.Json;
+﻿using System.Text.Json;
 
 namespace PowerPress;
 
@@ -71,9 +71,8 @@ public class WordPressHandler {
 			this.logger.SuccessMessage($"Updated 'ninja_forms_settings' option {optionName} to {optionValue}");
 			return;
 		}
-		// TODO: Also handle ACF option value success messages
 
-		this.logger.SuccessMessage(result.Output.First());
+		this.logger.SuccessMessage(result.Output.Count > 0 ? result.Output.First() : $"WP-CLI command {command} completed successfully");
 	}
 
 	public void RunInstall() {
@@ -208,5 +207,34 @@ public class WordPressHandler {
 		}
 
 		this.fileHandler.CopyDirectory(source, dest);
+	}
+
+	public void DangerouslyRunFunction(string func, string[] args, bool echo = false) {
+		// We don't want to load all themes and plugins because if they error it breaks this even though we might not need them loaded.
+		// Instead, just load ACF if the function is an ACF one
+		string prefixCode = "";
+		if (func.StartsWith("acf_")) {
+			prefixCode = "include_once WP_PLUGIN_DIR . '/advanced-custom-fields-pro/acf.php';";
+		}
+		// ...and add similar handling here as needed in the future.
+
+		string argList = string.Join(", ", args.Select(a => $"\"{a}\""));
+		string phpCode = echo
+			? $"{prefixCode} echo {func}({argList});"
+			: $"{prefixCode} \n{func}({argList});";
+
+		this.RunCliCommandWithPrefixedPhp(phpCode);
+	}
+
+	private void RunCliCommandWithPrefixedPhp(string phpCode, bool exitOnFail = false) {
+		string tempFile = Path.Combine(Path.GetTempPath(), $"wp_eval_{Guid.NewGuid():N}.php");
+
+		try {
+			File.WriteAllText(tempFile, $"<?php \n{phpCode}");
+			this.RunCliCommand($"eval-file {tempFile}", true, exitOnFail);
+		}
+		finally {
+			if (File.Exists(tempFile)) File.Delete(tempFile);
+		}
 	}
 }

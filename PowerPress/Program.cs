@@ -14,6 +14,8 @@ string action = ui.PromptForSelection(
 );
 
 if (action == "test") {
+	Environment.SetEnvironmentVariable("POWERPRESS_DEBUG", "1");
+
 	string module = ui.PromptForSelection(
 		"Select a module to run:",
 		new Dictionary<string, string> {
@@ -23,7 +25,8 @@ if (action == "test") {
 			["Create an empty database"] = "database",
 			["Import a database"] = "import",
 			["Test folder creation and deletion"] = "folders",
-			["Test WP-CLI"] = "wp"
+			["Test WP-CLI"] = "wp",
+			["Test WP-CLI eval (requires an existing WP install)"] = "eval"
 		}
 	);
 
@@ -82,6 +85,16 @@ if (action == "test") {
 			fh.MaybeCreateFolder("C:/temp/test-site/app");
 			wp.RunCliCommand("--version"); // Something we expect to work
 			wp.RunCliCommand("plugin activate doublee-breadcrumbs"); // Something we expect to fail (because WP is not installed)
+			Environment.Exit(0);
+			break;
+		case "eval":
+			LocalSiteConfig testSiteConfig2 = new("test-site", "C:/Users/leesa/PhpStormProjects/wordpress-canvas", "example.com");
+			WordPressHandler wp2 = new(testSiteConfig2);
+			wp2.DangerouslyRunFunction("get_bloginfo", ["name"], true);
+
+			string acfProKey = Environment.GetEnvironmentVariable("ACF_PRO_KEY", EnvironmentVariableTarget.User) ?? "test-key-will-error";
+			wp2.DangerouslyRunFunction("acf_pro_update_license", [acfProKey]);
+
 			Environment.Exit(0);
 			break;
 		default:
