@@ -65,10 +65,11 @@ public class DatabaseHandler {
 		return false;
 	}
 
-	public void MaybeDropDb() {
+	public void MaybeDropDb(bool definitelyDropIfNotEmpty = false) {
 		try {
 			bool exists = this.DbExists();
 			bool empty = this.DbIsEmpty();
+			bool proceed = definitelyDropIfNotEmpty;
 
 			if (!exists) {
 				this.logger.InfoMessage($"Database {this.config.DbName} does not exist. Skipping drop.");
@@ -80,11 +81,13 @@ public class DatabaseHandler {
 				return;
 			}
 
-			bool proceed = this.ui.PromptForYesOrNo(
-				"Do you want to drop the existing database and create a new one?",
-				"Yes, drop the existing database",
-				"No, leave the existing database as-is"
-			);
+			if (!definitelyDropIfNotEmpty) {
+				proceed = this.ui.PromptForYesOrNo(
+					"Do you want to drop the existing database and create a new one?",
+					"Yes, drop the existing database",
+					"No, leave the existing database as-is"
+				);
+			}
 
 			if (proceed) {
 				this.ExecuteCommand($"DROP DATABASE {this.config.DbName}");

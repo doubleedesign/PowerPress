@@ -182,8 +182,14 @@ $DbHandler = [PowerPress.DatabaseHandler]::new($SiteConfig)
 $FileHandler.SetConfig($SiteConfig)
 
 # Handle database creation if required
-$DbHandler.MaybeDropDb()
-$DbHandler.MaybeCreateDb()
+if ($willImportExistingDb) {
+	$DbHandler.MaybeDropDb($true)
+	$DbHandler.MaybeCreateDb()
+}
+else {
+	$DbHandler.MaybeDropDb()
+	$DbHandler.MaybeCreateDb()
+}
 $Logger.DisplaySectionFooter()
 
 
@@ -221,14 +227,13 @@ $WpHandler.UpdateConfig()
 # Import existing database if applicable, or run new WordPress install
 if ($willImportExistingDb) {
 	try {
-		$DbHandler.MaybeImportDb()
+		$DbHandler.MaybeImportData()
 		$WpHandler.RunCliCommand("rewrite flush")
 	}
 	catch {
-		$Logger.ErrorMessage("Failed to import database");
-		$Logger.ErrorMessage($_);
-		$Logger.InfoMessage("Proceeding as new install instead");
-		$WpHandler.RunInstall()
+		$Logger.ErrorMessage("Failed to import database")
+		$Logger.ErrorMessage($_)
+		exit(1)
 	}
 }
 else {
