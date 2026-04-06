@@ -362,7 +362,7 @@ $Logger.DisplaySectionFooter()
 # =============================================================================================================== #
 $Logger.DisplaySectionHeader("Setup complete")
 $credentialsSaved = $False
-aif (-not $importExistingDb -and $useBitwarden) {
+if (-not $importExistingDb -and $useBitwarden) {
 	$credentialsSaved = $CredsHandler.MaybeSaveCredentials($SiteConfig:SiteName, $SiteConfig:SiteUrl, $SiteConfig.AdminUser, $SiteConfig.AdminPassword)
 	$CredsHandler.MaybeLogOut()
 	# TODO: If using Bitwarden but with an imported db, look up the credentials of the production URL and save them for the local URL
