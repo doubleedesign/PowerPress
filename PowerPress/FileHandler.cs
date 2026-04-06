@@ -163,19 +163,19 @@ public class FileHandler {
 			return;
 		}
 
+		// Create the destination directory if it doesn't already exist
+		if (!Directory.Exists(dest)) {
+			Directory.CreateDirectory(dest);
+		}
+
 		// Ref: https://learn.microsoft.com/en-us/dotnet/standard/io/how-to-copy-directories
 		// Get information about the source directory
 		DirectoryInfo dir = new(source);
 		// Cache directories before we start copying
 		DirectoryInfo[] dirs = dir.GetDirectories();
-		// Create the destination directory
-		Directory.CreateDirectory(dest);
 
-		// Get the files in the source directory and copy to the destination directory
-		foreach (FileInfo file in dir.GetFiles()) {
-			string targetFilePath = Path.Combine(dest, file.Name);
-			file.CopyTo(targetFilePath);
-		}
+		// Get the files in the source directory root and copy to the destination directory
+		this.CopyFiles(source, dest);
 
 		// Recursively call this method to copy subdirectories
 		foreach (DirectoryInfo subDir in dirs) {
@@ -183,10 +183,14 @@ public class FileHandler {
 			this.CopyDirectory(subDir.FullName, newDestinationDir);
 		}
 
-		if (!this.FolderExistsNonEmpty(dest)) {
-			throw new IOException($"Failed to copy directory from {source} to {dest}");
-		}
-
 		this.logger.SuccessMessage($"Copied directory from {source} \n \t \tto {dest}");
+	}
+
+	private void CopyFiles(string source, string dest) {
+		DirectoryInfo dir = new(source);
+		foreach (FileInfo file in dir.GetFiles()) {
+			string targetFilePath = Path.Combine(dest, file.Name);
+			file.CopyTo(targetFilePath);
+		}
 	}
 }
