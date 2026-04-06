@@ -107,6 +107,17 @@ public class PowerShellBridge {
 		return new CommandResult(errors.Count == 0, results.Concat(errors).ToList());
 	}
 
+	/// <summary>
+	/// </summary>
+	/// <param name="command"></param>
+	/// <param name="args"></param>
+	/// <param name="workingDirectory"></param>
+	/// <param name="verbose">
+	///     Whether to allow commands like git and composer to output all their normal stuff.
+	///     If false,output will be handled manually and other output from the command may be suppressed.
+	/// </param>
+	/// <returns></returns>
+	/// <exception cref="InvalidOperationException"></exception>
 	public CommandResult RunProcess(string command, string args, string workingDirectory, bool verbose = true) {
 		ProcessStartInfo psi = new() {
 			FileName = command,
@@ -119,7 +130,7 @@ public class PowerShellBridge {
 
 		using Process process = Process.Start(psi) ?? throw new InvalidOperationException($"Failed to start process: {command}");
 
-		// Collect and handle output before exiting the process if applicable
+		// Collect and manually handle output before exiting the process if applicable
 		if (!verbose) {
 			string stdout = process.StandardOutput.ReadToEnd();
 			string stderr = process.StandardError.ReadToEnd();

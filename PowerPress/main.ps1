@@ -100,7 +100,8 @@ $DepsHandler.CheckPermissions()
 
 # BitWarden CLI is treated a little differently than other dependencies because we need to check env variables as well as the command,
 # and it makes sense to log in at the same time to avoid checking "can access Bitwarden" multiple times
-$useBitwarden = $CredsHandler.MaybeLogIn() # FIXME getting an error here
+# TODO: Maybe move this so whether to confirm is more intuitive
+$useBitwarden = $CredsHandler.MaybeLogIn($true)
 $Logger.DisplaySectionFooter()
 
 # =============================================================================================================== #
