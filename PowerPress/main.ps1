@@ -67,8 +67,8 @@ $Logger.DisplaySectionFooter()
 
 # Check dependencies and PHP extensions before doing anything else
 $Logger.DisplaySectionHeader("Prerequisites")
-#$DepsHandler.CheckDependencies()
-#$DepsHandler.CheckPermissions()
+$DepsHandler.CheckDependencies()
+$DepsHandler.CheckPermissions()
 
 # BitWarden CLI is treated a little differently than other dependencies because we need to check env variables as well as the command,
 # and it makes sense to log in at the same time to avoid checking "can access Bitwarden" multiple times
@@ -306,6 +306,7 @@ else {
 if (-not [string]::IsNullOrEmpty($acfProKey)) {
 	# FIXME: Getting rogue "this is not a WP installation" console output after this runs, but it is running fine and I don't know where it's coming from
 	$WpHandler.DangerouslyRunFunction("acf_pro_update_license", $acfProKey) | Out-Null
+
 }
 else {
 	$Logger.WarningMessage("ACF Pro licence key is empty. Skipping licence acivation.");
