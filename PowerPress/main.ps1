@@ -270,31 +270,10 @@ $plugins = @(
 	"doublee-breadcrumbs"
 	"comet-plugin-blocks"
 )
-$pluginsToComposerUpdate = @(
-	"doublee-base-plugin",
-	"doublee-tinymce",
-	"doublee-breadcrumbs",
-	"comet-plugin-blocks"
-)
-
-# Make sure certain plugins have their correct Composer deps 
-# (there can be discrepancies if dev ones were left behind and committed accidentally, or local packages are not up-to-date when using dev mode)
-foreach ($plugin in $pluginsToComposerUpdate) {
-	$pluginPath = Join-Path $SiteConfig.WpDir "wp-content\plugins\$plugin"
-	if (Test-Path $pluginPath) {
-		$Logger.InfoMessage("Installing Composer dependencies for $plugin");
-		if (-not $Dev) {
-			$Composer.RunCommand("install --no-dev --prefer-dist --no-cache", $pluginPath)
-		}
-		else {
-			$Composer.RunCommand("install --no-cache", $pluginPath)
-		}
-	}
-}
-
 $Logger.InfoMessage("Activating plugins");
 $plugins | ForEach-Object { $WpHandler.MaybeActivatePlugin($_) }
 
+# Handle ACF Pro licence activation
 $defaultAcfProKey = [Environment]::GetEnvironmentVariable("ACF_PRO_KEY", "User")
 if ( [string]::IsNullOrEmpty($defaultAcfProKey)) {
 	$acfProKey = $UI.PromptForText("Enter your ACF Pro Developer licence key")
