@@ -305,7 +305,8 @@ else {
 }
 if (-not [string]::IsNullOrEmpty($acfProKey)) {
 	# FIXME: Getting rogue "this is not a WP installation" console output after this runs, but it is running fine and I don't know where it's coming from
-	$WpHandler.DangerouslyRunFunction("acf_pro_update_license", $acfProKey) | Out-Null
+	# TODO: Test this function change - may need to pass it more arguments
+	$WpHandler.DangerouslyRunFunction("acf_pro_activate_license", $acfProKey) | Out-Null
 
 }
 else {
