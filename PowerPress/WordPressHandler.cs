@@ -1,4 +1,4 @@
-using System.Text.Json;
+﻿using System.Text.Json;
 
 namespace PowerPress;
 
@@ -168,8 +168,8 @@ public class WordPressHandler {
 	}
 
 	public void MaybeActivatePlugin(string plugin) {
-		if (!Directory.Exists(Path.Combine(this.config.WpDir, "wp-content", "plugins", "plugin"))) {
-			this.logger.WarningMessage("Plugin $plugin not found. Skipping activation.");
+		if (!Directory.Exists(Path.Combine(this.config.WpDir, "wp-content", "plugins", plugin))) {
+			this.logger.WarningMessage($"Plugin {plugin} not found. Skipping activation.");
 			return;
 		}
 
