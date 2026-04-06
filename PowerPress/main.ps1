@@ -227,8 +227,10 @@ $WpHandler.UpdateConfig()
 
 # Import existing database if applicable, or run new WordPress install
 if ($willImportExistingDb) {
+	$SiteUrl = $SiteConfig.SiteUrl
 	try {
 		$DbHandler.MaybeImportData()
+		$WpHandler.RunCliCommand("search-replace $ProductionUrl $SiteUrl --skip-columns=guid")
 		$WpHandler.RunCliCommand("rewrite flush")
 	}
 	catch {
@@ -241,7 +243,6 @@ else {
 	$WpHandler.RunInstall()
 }
 
-# TODO find-and-replace of the site URL using WP-CLI
 
 $WpHandler.RunPostinstallCleanup()
 $Logger.DisplaySectionFooter()
