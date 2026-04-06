@@ -1,4 +1,4 @@
-﻿using System.Text.Json;
+using System.Text.Json;
 
 namespace PowerPress;
 
@@ -49,7 +49,7 @@ public class WordPressHandler {
 		this.logger.SuccessMessage("wp-config.php updated successfully");
 	}
 
-	public void RunCliCommand(string command, bool skipPluginsAndThemes = true, bool exitOnFail = false) {
+	public CommandResult RunCliCommand(string command, bool skipPluginsAndThemes = true, bool exitOnFail = false) {
 		string[] args = command.Split(' ', StringSplitOptions.RemoveEmptyEntries);
 		Directory.SetCurrentDirectory(this.config.WpDir);
 		CommandResult result = skipPluginsAndThemes
@@ -62,17 +62,20 @@ public class WordPressHandler {
 				Environment.Exit(1);
 			}
 
-			return;
+			return result;
 		}
 
 		if (result.Output.Count > 0 && result.Output.First().Equals("Success: Updated 'ninja_forms_settings' option.")) {
 			string optionName = args.Reverse().Skip(1).First();
 			string optionValue = args.Reverse().First();
 			this.logger.SuccessMessage($"Updated 'ninja_forms_settings' option {optionName} to {optionValue}");
-			return;
+
+			return result;
 		}
 
 		this.logger.SuccessMessage(result.Output.Count > 0 ? result.Output.First() : $"WP-CLI command {command} completed successfully");
+
+		return result;
 	}
 
 	public void RunInstall() {
@@ -216,6 +219,15 @@ public class WordPressHandler {
 	public void UpdateSiteUrl(string oldUrl, string newUrl) {
 		this.RunCliCommand($"search-replace {oldUrl} {newUrl} --skip-columns=guid");
 		this.RunCliCommand("rewrite flush");
+
+		// Check that site URL in wp_options matches the new URL
+		CommandResult result = this.RunCliCommand("option get siteurl", exitOnFail: false);
+		if (result.Output.First() == newUrl) {
+			this.logger.SuccessMessage("Site URL updated successfully");
+		}
+		else {
+			this.logger.ErrorMessage($"Site URL update may have failed. Expected {newUrl} but got {result.Output.First()}");
+		}
 	}
 
 	public void DangerouslyRunFunction(string func, string[] args, bool echo = false) {
