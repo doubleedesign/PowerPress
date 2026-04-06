@@ -177,12 +177,12 @@ public class WordPressHandler {
 	}
 
 	public void MaybeRemovePlugin(string ifInstalled, string thenRemove) {
-		if (!Directory.Exists(Path.Combine(this.config.WpDir, ifInstalled))) {
+		if (!Directory.Exists(Path.Combine(this.config.WpDir, "wp-content", "plugins", ifInstalled))) {
 			this.logger.InfoMessage($"Plugin {ifInstalled} is not present, skipping removal");
 			return;
 		}
 
-		this.fileHandler.MaybeDeleteFolder(Path.Combine(this.config.WpDir, thenRemove));
+		this.fileHandler.MaybeDeleteFolder(Path.Combine(this.config.WpDir, "wp-content", "plugins", thenRemove));
 		this.composerHandler.RemoveDependency(thenRemove);
 	}
 
