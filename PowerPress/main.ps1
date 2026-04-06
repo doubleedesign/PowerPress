@@ -118,12 +118,12 @@ $Logger.DisplaySectionFooter()
 $Logger.DisplaySectionHeader("Base Config");
 $username = $env:USERNAME
 
+$ProductionUrl = $UI.PromptForText("Enter the production URL for this site (without https://)", "")
+
 $defaultProjectsDir = "C:\Users\$username\ClientSites"
 $PROJECTS_DIR = $UI.PromptForText("Enter the path to your website projects directory", $defaultProjectsDir)
 $SiteDir = Join-Path $PROJECTS_DIR $SiteName
 $Logger.InfoMessage("Site directory will be: $SiteDir");
-
-$ProductionUrl = $UI.PromptForText("Enter the production URL for this site (without https://)", "")
 
 # If directory exists, prompt to delete or exit
 $continue = $FileHandler.MaybeDeleteFolder($SiteDir, "Directory $SiteDir already exists. Do you want to delete it and start fresh?")
