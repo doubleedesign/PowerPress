@@ -15,11 +15,6 @@
   <component name="ChangeListManager">
     <list default="true" id="b7104dd0-933d-420c-984d-6ffaddda2db4" name="Changes" comment="">
       <change beforePath="$PROJECT_DIR$/.idea/.idea.PowerPress/.idea/workspace.xml" beforeDir="false" afterPath="$PROJECT_DIR$/.idea/.idea.PowerPress/.idea/workspace.xml" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/PowerPress.sln.DotSettings.user" beforeDir="false" afterPath="$PROJECT_DIR$/PowerPress.sln.DotSettings.user" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/PowerPress/BitwardenHandler.cs" beforeDir="false" afterPath="$PROJECT_DIR$/PowerPress/BitwardenHandler.cs" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/PowerPress/DatabaseHandler.cs" beforeDir="false" afterPath="$PROJECT_DIR$/PowerPress/DatabaseHandler.cs" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/PowerPress/PowerShellBridge.cs" beforeDir="false" afterPath="$PROJECT_DIR$/PowerPress/PowerShellBridge.cs" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/PowerPress/WordPressHandler.cs" beforeDir="false" afterPath="$PROJECT_DIR$/PowerPress/WordPressHandler.cs" afterDir="false" />
       <change beforePath="$PROJECT_DIR$/PowerPress/main.ps1" beforeDir="false" afterPath="$PROJECT_DIR$/PowerPress/main.ps1" afterDir="false" />
     </list>
     <option name="SHOW_DIALOG" value="false" />
@@ -58,6 +53,9 @@
     <setting file="file://$APPLICATION_CONFIG_DIR$/resharper-host/SourcesCache/3914f7ebc34c43728421d169ef908562a670a2de6c825182e7116468f781261/FileSystem.DirectoryCreation.Windows.cs" root0="SKIP_HIGHLIGHTING" />
     <setting file="file://$APPLICATION_CONFIG_DIR$/resharper-host/SourcesCache/c98e302e5c785178e79f5d5fec851ebd9ec7fe7ccfb299b83df0717c48a68640/ProcessStartInfo.Win32.cs" root0="FORCE_HIGHLIGHTING" />
     <setting file="file://$APPLICATION_CONFIG_DIR$/resharper-host/SourcesCache/f87fe443c817f5c5221c89db6b9a7ac0d8923bb781cdf4aaffe1974f3b88eb2/Directory.cs" root0="SKIP_HIGHLIGHTING" />
+    <setting file="file://$USER_HOME$/ClientSites/evatt-calisthenics/composer.dev.json" root0="FORCE_HIGHLIGHTING" />
+    <setting file="file://$USER_HOME$/ClientSites/evatt-calisthenics/composer.json" root0="FORCE_HIGHLIGHTING" />
+    <setting file="file://$USER_HOME$/PhpStormProjects/doublee-tinymce/composer.json" root0="FORCE_HIGHLIGHTING" />
     <setting file="file://$USER_HOME$/PhpStormProjects/wordpress-canvas/composer.dev.json" root0="FORCE_HIGHLIGHTING" />
     <setting file="file://$USER_HOME$/PhpStormProjects/wordpress-canvas/composer.json" root0="FORCE_HIGHLIGHTING" />
   </component>
@@ -95,7 +93,7 @@
     "to.speed.mode.migration.done": "true"
   }
 }]]></component>
-  <component name="RunManager" selected=".NET Project.PowerPress">
+  <component name="RunManager">
     <configuration name="PowerPress" type="DotNetProject" factoryName=".NET Project">
       <option name="EXE_PATH" value="" />
       <option name="PROGRAM_PARAMETERS" value="" />
@@ -163,19 +161,6 @@
           <properties exception="System.Threading.ThreadAbortException" breakIfHandledByOtherCode="false" displayValue="System.Threading.ThreadAbortException" />
           <option name="timeStamp" value="3" />
         </breakpoint>
-        <line-breakpoint enabled="true" type="DotNet Breakpoints">
-          <url>file://$PROJECT_DIR$/PowerPress/PowerShellBridge.cs</url>
-          <line>106</line>
-          <properties documentPath="C:\Users\leesa\.config\herd\bin\PowerPress\PowerPress\PowerShellBridge.cs" containingFunctionPresentation="Method 'RunCommand'">
-            <startOffsets>
-              <option value="3271" />
-            </startOffsets>
-            <endOffsets>
-              <option value="3348" />
-            </endOffsets>
-          </properties>
-          <option name="timeStamp" value="6" />
-        </line-breakpoint>
       </breakpoints>
     </breakpoint-manager>
     <watches-manager>

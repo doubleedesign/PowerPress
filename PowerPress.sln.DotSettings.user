@@ -15,9 +15,5 @@
   &lt;Assembly Path="C:\Users\leesa\.dotnet\packs\Microsoft.NETCore.App.Ref\10.0.3\ref\net10.0\System.Memory.dll" /&gt;&#xD;
   &lt;Assembly Path="C:\Users\leesa\.nuget\packages\mysqlconnector\2.5.0\lib\net10.0\MySqlConnector.dll" /&gt;&#xD;
 &lt;/AssemblyExplorer&gt;</s:String>
-	<s:String x:Key="/Default/Environment/UnitTesting/UnitTestSessionStore/Sessions/=68cb0283_002Dcb53_002D494d_002D9c5e_002D7805b5ab8eb4/@EntryIndexedValue">&lt;SessionState ContinuousTestingMode="0" IsActive="True" Name="LoggerTests" xmlns="urn:schemas-jetbrains-com:jetbrains-ut-session"&gt;&#xD;
-  &lt;TestAncestor&gt;&#xD;
-    &lt;TestId&gt;NUnit3x::C287025A-FE79-89CB-F758-AB654846D049::net10.0::PowerPressTests.LoggerTests&lt;/TestId&gt;&#xD;
-  &lt;/TestAncestor&gt;&#xD;
-&lt;/SessionState&gt;</s:String>
+	
 	</wpf:ResourceDictionary>

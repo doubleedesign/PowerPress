@@ -164,6 +164,15 @@ public class WordPressHandler {
 		}
 	}
 
+	public void MaybeActivatePlugin(string plugin) {
+		if (!Directory.Exists(Path.Combine(this.config.WpDir, "wp-content", "plugins", "plugin"))) {
+			this.logger.WarningMessage("Plugin $plugin not found. Skipping activation.");
+			return;
+		}
+
+		this.RunCliCommand($"plugin activate {plugin}");
+	}
+
 	public void MaybeRemovePlugin(string ifInstalled, string thenRemove) {
 		if (!Directory.Exists(Path.Combine(this.config.WpDir, ifInstalled))) {
 			this.logger.InfoMessage($"Plugin {ifInstalled} is not present, skipping removal");
@@ -201,12 +210,12 @@ public class WordPressHandler {
 	public void CopyUploadsFromLocalPath(string source) {
 		string dest = Path.Combine(this.config.WpDir, "wp-content", "uploads");
 
-		if (Directory.Exists(dest)) {
-			this.logger.InfoMessage("Uploads directory already exists, skipping copy");
-			return;
-		}
-
 		this.fileHandler.CopyDirectory(source, dest);
+	}
+
+	public void UpdateSiteUrl(string oldUrl, string newUrl) {
+		this.RunCliCommand($"search-replace {oldUrl} {newUrl} --skip-columns=guid");
+		this.RunCliCommand("rewrite flush");
 	}
 
 	public void DangerouslyRunFunction(string func, string[] args, bool echo = false) {

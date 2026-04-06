@@ -6,52 +6,12 @@ param(
 )
 
 # =============================================================================================================== #
-$dotnet = Get-Command dotnet | Select-Object -ExpandProperty Version
-$source = Get-Command dotnet | Select-Object -ExpandProperty Source
-$versionNumber = [int]$dotnet.Major
-if ($versionNumber -lt 10) {
-	Write-Host "`n✖  PowerPress requires .NET 10 or higher." -ForegroundColor Red
-	Write-Host "   Download installer from: https://dotnet.microsoft.com/en-us/download/dotnet"
-	Write-Host "   Or run: choco install dotnet"
-	exit 1
-}
-else {
-	Write-Host "✔  .NET version is $dotnet [$source]" -ForegroundColor Green
-}
-
-$sdk = dotnet --list-sdks | Select-Object -First 1
-if ($sdk -match "10\.\d+\.\d+") {
-	Write-Host "✔  .NET SDK version is $sdk" -ForegroundColor Green
-}
-else {
-	Write-Host "`n✖  .NET SDK 10 is required to build and run PowerPress." -ForegroundColor Red
-	Write-Host "   Download installer from: https://dotnet.microsoft.com/en-us/download/dotnet" -ForegroundColor Red
-	Write-Host "   Or run: choco install dotnet-sdk" -ForegroundColor Red
-	exit 1
-}
-
-# Load compiled C# classes
-Import-Module $PSScriptRoot\ClassLoader.psm1
-Import-Classes
+# Check .NET prerequisites
+Import-Module $PSScriptRoot\DotNetChecks.psm1
+Test-Dotnet-Prerequisites
 
 # Store location the script was called from
 $scriptLocation = Get-Location
-
-try {
-	# Create instances of the classes we need to use throughout the script that do not need the local site config passed in at construction
-	$Logger = [PowerPress.Logger]::new()
-	$UI = [PowerPress.UserInput]::new()
-	$DepsHandler = [PowerPress.Dependencies]::new()
-	$CredsHandler = [PowerPress.BitwardenHandler]::new()
-	$FileHandler = [PowerPress.FileHandler]::new()
-}
-catch {
-	Write-Host "✖  Failed to initialise PowerPress classes: $( $_.Exception.Message )" -ForegroundColor Red
-	if ($_.Exception.InnerException) {
-		Write-Host "   $( $_.Exception.InnerException.Message )" -ForegroundColor Red
-	}
-	exit 1
-}
 
 # Make sure site name was provided and show help if not
 if ($Help -or [string]::IsNullOrEmpty($SiteName)) {
@@ -68,17 +28,29 @@ if ($Help -or [string]::IsNullOrEmpty($SiteName)) {
 	exit 0
 }
 
+
 # If the -Debug flag is set, set the environment variable
 if ($Debug) {
 	$env:POWERPRESS_DEBUG = "1"
-	$Logger.SuccessMessage("PowerPress Debug mode enabled");
+	Write-Host "✔  PowerPress debug mode enabled" -ForegroundColor Green
 }
 
 # If the -Dev flag is set, set the environment variable
 if ($Dev) {
 	$env:POWERPRESS_DEV = "1"
-	$Logger.SuccessMessage("Dev mode enabled for site setup");
+	Write-Host "✔  Dev mode enabled for site setup" -ForegroundColor Green
 }
+
+# Load compiled C# classes
+Import-Module $PSScriptRoot\ClassLoader.psm1
+Import-Classes
+
+# Create instances of the classes we need to use throughout the script that do not need the local site config passed in at construction
+$Logger = [PowerPress.Logger]::new()
+$UI = [PowerPress.UserInput]::new()
+$DepsHandler = [PowerPress.Dependencies]::new()
+$CredsHandler = [PowerPress.BitwardenHandler]::new()
+$FileHandler = [PowerPress.FileHandler]::new()
 
 
 # =============================================================================================================== #
@@ -95,8 +67,8 @@ $Logger.DisplaySectionFooter()
 
 # Check dependencies and PHP extensions before doing anything else
 $Logger.DisplaySectionHeader("Prerequisites")
-$DepsHandler.CheckDependencies()
-$DepsHandler.CheckPermissions()
+#$DepsHandler.CheckDependencies()
+#$DepsHandler.CheckPermissions()
 
 # BitWarden CLI is treated a little differently than other dependencies because we need to check env variables as well as the command,
 # and it makes sense to log in at the same time to avoid checking "can access Bitwarden" multiple times
@@ -158,14 +130,14 @@ $SiteConfig = [PowerPress.LocalSiteConfig]::new(
 	$dbPass
 )
 
-$willImportExistingDb = $UI.PromptForYesOrNo(
+$importExistingDb = $UI.PromptForYesOrNo(
 	"Do you want to import an existing database from a SQL file?",
 	"Yes, I want to import an existing database",
 	"No, set up as a new install",
 	$false
 );
 
-if (-not $willImportExistingDb) {
+if (-not $importExistingDb) {
 	$AdminEmail = $UI.PromptForText("Enter the admin email for this site", "leesa@doubleedesign.com.au")
 	$SiteConfig.AddWordPressAdmin($AdminEmail)
 }
@@ -173,7 +145,7 @@ if (-not $willImportExistingDb) {
 # Output all the config values for info and debugging
 $Logger.InfoMessage("`nFinal configuration:");
 $Logger.DisplayJsonTable($SiteConfig.GetJsonString())
-if ($willImportExistingDb) {
+if ($importExistingDb) {
 	$Logger.WarningMessage("The site name will be overridden by your database import")
 }
 
@@ -182,10 +154,21 @@ $DbHandler = [PowerPress.DatabaseHandler]::new($SiteConfig)
 # ...and update the file handler with the config
 $FileHandler.SetConfig($SiteConfig)
 
-# Handle database creation if required
-if ($willImportExistingDb) {
+# Handle database creation and import as required
+if ($importExistingDb) {
 	$DbHandler.MaybeDropDb($true)
 	$DbHandler.MaybeCreateDb()
+	try {
+		$DbHandler.MaybeImportData()
+		# Note: We can't do the find-and-replace yet because we're using WP-CLI for that, which means we need to wait until WordPress is available
+	}
+	catch {
+		$Logger.ErrorMessage("Database import failed with error: $( $_.Exception.Message )");
+		if ($_.Exception.InnerException) {
+			$Logger.ErrorMessage("Inner exception: $( $_.Exception.InnerException.Message )");
+		}
+		exit 1
+	}
 }
 else {
 	$DbHandler.MaybeDropDb()
@@ -198,32 +181,19 @@ $Logger.DisplaySectionFooter()
 $Logger.DisplaySectionHeader("Installation")
 $Canvas = [PowerPress.CanvasRepo]::new($SiteConfig)
 $Composer = [PowerPress.ComposerHandler]::new($SiteConfig)
+$WpHandler = [PowerPress.WordPressHandler]::new($SiteConfig)
+
 $Canvas.Init()
 $Composer.Init()
 $Composer.RunInstall()
-
-# Update wp-config
-$WpHandler = [PowerPress.WordPressHandler]::new($SiteConfig)
 $WpHandler.UpdateConfig()
 
-# Import existing database if applicable, or run new WordPress install
-if ($willImportExistingDb) {
-	$SiteUrl = $SiteConfig.SiteUrl
-	try {
-		$DbHandler.MaybeImportData()
-		$WpHandler.RunCliCommand("search-replace $ProductionUrl $SiteUrl --skip-columns=guid")
-		$WpHandler.RunCliCommand("rewrite flush")
-	}
-	catch {
-		$Logger.ErrorMessage("Failed to import database")
-		$Logger.ErrorMessage($_)
-		exit(1)
-	}
+if ($importExistingDb) {
+	$WpHandler.UpdateSiteUrl($SiteConfig.ProductionUrl, $SiteConfig.SiteUrl)
 }
 else {
 	$WpHandler.RunInstall()
 }
-
 
 $WpHandler.RunPostinstallCleanup()
 $Logger.DisplaySectionFooter()
@@ -307,7 +277,8 @@ $pluginsToComposerUpdate = @(
 	"comet-plugin-blocks"
 )
 
-# Make sure certain plugins have their correct Composer deps (there can be discrepancies if dev ones were left behind and committed accidentally)
+# Make sure certain plugins have their correct Composer deps 
+# (there can be discrepancies if dev ones were left behind and committed accidentally, or local packages are not up-to-date when using dev mode)
 foreach ($plugin in $pluginsToComposerUpdate) {
 	$pluginPath = Join-Path $SiteConfig.WpDir "wp-content\plugins\$plugin"
 	if (Test-Path $pluginPath) {
@@ -322,15 +293,7 @@ foreach ($plugin in $pluginsToComposerUpdate) {
 }
 
 $Logger.InfoMessage("Activating plugins");
-foreach ($plugin in $plugins) {
-	$pluginPath = Join-Path $SiteConfig.WpDir "wp-content\plugins\$plugin"
-	if (Test-Path $pluginPath) {
-		$WpHandler.RunCliCommand("plugin activate $plugin")
-	}
-	else {
-		$Logger.WarningMessage("Plugin $plugin not found. Skipping activation.");
-	}
-}
+$plugins | ForEach-Object { $WpHandler.MaybeActivatePlugin($_) }
 
 $defaultAcfProKey = [Environment]::GetEnvironmentVariable("ACF_PRO_KEY", "User")
 if ( [string]::IsNullOrEmpty($defaultAcfProKey)) {
@@ -389,6 +352,8 @@ $Logger.DisplaySectionFooter()
 $Logger.DisplaySectionHeader("Version control")
 # TODO: For existing sites, check if it is already a Git repo before doing this; if it is commit changes instead 
 Set-Location $SiteConfig.SiteDir
+# Ignore "LF will be replaced by CRLF the next time Git touches it" warnings
+$env:GIT_CONFIG_PARAMETERS = "'core.safecrlf=false'"
 git init
 git add .
 git commit -m "Set up site from WordPress Canvas template using PowerPress"
@@ -397,7 +362,7 @@ $Logger.DisplaySectionFooter()
 # =============================================================================================================== #
 $Logger.DisplaySectionHeader("Setup complete")
 $credentialsSaved = $False
-if (-not $willImportExistingDb -and $useBitwarden) {
+aif (-not $importExistingDb -and $useBitwarden) {
 	$credentialsSaved = $CredsHandler.MaybeSaveCredentials($SiteConfig:SiteName, $SiteConfig:SiteUrl, $SiteConfig.AdminUser, $SiteConfig.AdminPassword)
 	$CredsHandler.MaybeLogOut()
 	# TODO: If using Bitwarden but with an imported db, look up the credentials of the production URL and save them for the local URL
@@ -408,7 +373,7 @@ Write-Host "Admin URL: $siteUrl/wp-admin" -ForegroundColor Cyan
 Write-Host "You might still need to:" -ForegroundColor Cyan
 Write-Host "`t - Update README.md with project-specific details" -ForegroundColor Cyan
 Write-Host "`t - Enter your FTP username and password in PhpStorm's deployment settings" -ForegroundColor Cyan
-if (-not $willImportExistingDb -and -not $credentialsSaved) {
+if (-not $importExistingDb -and -not $credentialsSaved) {
 	$adminUser = $SiteConfig.AdminUser
 	$adminPassword = $SiteConfig.AdminPassword
 	Write-Host "`t - Save your admin username and password ( $adminUser | $adminPassword ) to your password manager or another safe location" -ForegroundColor Cyan
@@ -425,15 +390,14 @@ else {
 }
 Write-Host "`t - Set up your SEO Framework configuration" -ForegroundColor Cyan
 Write-Host "`t - Double-check your permalink settings" -ForegroundColor Cyan
+if ($Dev) {
+	Write-Host "`t - Remember to clear out dev dependencies in symlinked plugins before deployment" -ForegroundColor Cyan
+}
 $Logger.DisplaySectionFooter()
 
+# =============================================================================================================== #
 Set-Location $SiteConfig.SiteDir
-try {
-	Start-Process "$siteUrl/wp-admin"
-}
-catch {
-	$Logger.WarningMessage("Could not automatically open the admin URL in your browser. `nTry clicking the link above or copying and pasting it into your browser instead.");
-}
+Start-Process "$siteUrl/wp-admin"
 
 try {
 	$phpStormPath = "C:\Users\$username\AppData\Local\Programs\PhpStorm\bin\phpstorm64.exe"
@@ -442,5 +406,3 @@ try {
 catch {
 	$Logger.WarningMessage("Could not automatically open the project in PhpStorm :(");
 }
-
-Set-Location $scriptLocation

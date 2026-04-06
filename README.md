@@ -59,7 +59,7 @@ Upon successful completion:
 ## Prerequisites
 
 - [Laravel Herd](https://herd.laravel.com/windows) (preferably Pro)
-- PHP, MySQL/MariaDB, [Git](https://git-scm.com/install/windows), [Composer](https://getcomposer.org/), [WP-CLI](https://wp-cli.org/), and [robocopy](https://learn.microsoft.com/en-us/windows-server/administration/windows-commands/robocopy) installed and available via command line*
+- PHP, MySQL/MariaDB, [Git](https://git-scm.com/install/windows), [Composer](https://getcomposer.org/), and [WP-CLI](https://wp-cli.org/) installed and available via command line*
 - PowerShell 7+
 - [.NET 10+](https://dotnet.microsoft.com/en-us/download/dotnet/10.0) and [the SDK](https://dotnet.microsoft.com/en-us/download) installed system-wide
 - Permission to execute PowerShell scripts
