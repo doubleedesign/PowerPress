@@ -198,27 +198,8 @@ $Logger.DisplaySectionFooter()
 $Logger.DisplaySectionHeader("Installation")
 $Canvas = [PowerPress.CanvasRepo]::new($SiteConfig)
 $Composer = [PowerPress.ComposerHandler]::new($SiteConfig)
-# Initialise WordPress site foundation from template repo and update Composer config
 $Canvas.Init()
 $Composer.Init()
-
-# Determine whether to use composer.dev.json and local packages based on env variable set by the -Dev flag, and make the necessary updates
-$willUseDevComposerJson = $env.POWERPRESS_DEV -eq "1"
-if ($willUseDevComposerJson) {
-	$Logger.InfoMessage("Running setup in dev mode. composer.dev.json and local copies of Double-E Design packages will be used where applicable.");
-
-	# Prompt to confirm or change local packages directory, and then update composer.dev.json accordingly
-	$LOCAL_PACKAGES_DIR = $UI.PromptForText("Enter the path to your local packages directory for Comet Components, Double-E Base Plugin, etc.", "C:\Users\$username\PhpStormProjects")
-	$Composer.UpdateDevRepositories($LOCAL_PACKAGES_DIR)
-
-	# Update session env variable so install/update/etc use this file instead of composer.json
-	$env:COMPOSER = "composer.dev.json";
-}
-else {
-	$Logger.InfoMessage("Running setup in standard mode. Double-E Design packages will be downloaded from their published repositories.");
-}
-
-# Install dependencies via Composer
 $Composer.RunInstall()
 
 # Update wp-config
@@ -331,7 +312,7 @@ foreach ($plugin in $pluginsToComposerUpdate) {
 	$pluginPath = Join-Path $SiteConfig.WpDir "wp-content\plugins\$plugin"
 	if (Test-Path $pluginPath) {
 		$Logger.InfoMessage("Installing Composer dependencies for $plugin");
-		if (-not $willUseDevComposerJson) {
+		if (-not $Dev) {
 			$Composer.RunCommand("install --no-dev --prefer-dist --no-cache", $pluginPath)
 		}
 		else {

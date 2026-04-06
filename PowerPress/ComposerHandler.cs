@@ -7,6 +7,8 @@ public class ComposerHandler {
 	private readonly string composerJsonDevPath;
 	private readonly string composerJsonPath;
 	private readonly LocalSiteConfig config;
+	private readonly Dependencies deps = new();
+	private readonly bool devMode;
 	private readonly Logger logger = new();
 	private readonly PowerShellBridge ps = new();
 	private readonly UserInput ui = new();
@@ -15,12 +17,17 @@ public class ComposerHandler {
 		this.config = config;
 		this.composerJsonPath = Path.Combine(this.config.SiteDir, "composer.json");
 		this.composerJsonDevPath = Path.Combine(this.config.SiteDir, "composer.dev.json");
+		this.devMode = Environment.GetEnvironmentVariable("POWERPRESS_DEV", EnvironmentVariableTarget.Process) == "1";
 	}
 
 	public void Init() {
 		Directory.SetCurrentDirectory(this.config.SiteDir);
 		this.UpdateProjectInfo(this.composerJsonPath);
 		this.UpdateProjectInfo(this.composerJsonDevPath);
+		if (this.devMode) {
+			this.UpdateDevRepositories();
+			Environment.SetEnvironmentVariable("COMPOSER", "composer.dev.json", EnvironmentVariableTarget.Process);
+		}
 	}
 
 	private void UpdateComposerJson(string path, string key, string value) {
@@ -108,8 +115,13 @@ public class ComposerHandler {
 		}
 	}
 
-	public void UpdateDevRepositories(string localPackagesPath) {
+	private void UpdateDevRepositories() {
 		Directory.SetCurrentDirectory(this.config.SiteDir);
+		string username = Environment.GetEnvironmentVariable("USERNAME") ?? "";
+		string localPackagesPath = this.ui.PromptForText(
+			"Enter the path to your local packages directory for Comet Components, Double-E Base Plugin, etc.",
+			$"C:/Users/{username}/PhpStormProjects"
+		);
 
 		if (!File.Exists(this.composerJsonDevPath)) {
 			this.logger.ErrorMessage($"File not found: {this.composerJsonDevPath}, skipping repo path updates");
@@ -145,6 +157,12 @@ public class ComposerHandler {
 
 			string packageName = url.Split('/').Last();
 			string expectedPath = Path.Combine(localPackagesPath, packageName);
+			if (packageName.StartsWith("comet-")) {
+				expectedPath = Path.Combine(localPackagesPath, "comet-components", "packages", packageName);
+			}
+
+			// Determine relative path from composer.dev.json to the expected package path
+			expectedPath = Path.GetRelativePath(Path.GetDirectoryName(this.composerJsonDevPath)!, expectedPath);
 
 			if (Directory.Exists(expectedPath)) {
 				repo["url"] = expectedPath;
@@ -193,9 +211,21 @@ public class ComposerHandler {
 	}
 
 	public void RunCommand(string command, string? workingDir = null) {
+		if (this.devMode) {
+			// If a working directory such as a plugin is provided, we need to use its Composer file
+			if (workingDir != this.config.SiteDir) {
+				Environment.SetEnvironmentVariable("COMPOSER", "composer.json", EnvironmentVariableTarget.Process);
+			}
+			// But then if we need to run stuff from the root again and we are in dev mode, we need to make sure we're using the dev config
+			else {
+				Environment.SetEnvironmentVariable("COMPOSER", "composer.dev.json", EnvironmentVariableTarget.Process);
+			}
+		}
+
 		Directory.SetCurrentDirectory(workingDir ?? this.config.SiteDir);
 		this.logger.InfoMessage($"Working from: {Directory.GetCurrentDirectory()}");
-		CommandResult result = this.ps.RunProcess("pwsh.exe", $"/c composer {command}", Directory.GetCurrentDirectory());
+
+		CommandResult result = this.ps.RunProcess("pwsh.exe", $"-Command composer {command}", Directory.GetCurrentDirectory());
 
 		if (!result.Success) {
 			this.logger.ErrorMessage(result.Output.First());
@@ -206,6 +236,13 @@ public class ComposerHandler {
 	}
 
 	public void RunInstall() {
+		if (this.devMode) {
+			this.logger.InfoMessage("Running setup in dev mode. composer.dev.json and local copies of Double-E Design packages will be used where applicable.");
+		}
+		else {
+			this.logger.InfoMessage("Running setup in standard mode. Double-E Design packages will be downloaded from their published repositories.");
+		}
+
 		try {
 			this.RunCommand("install");
 		}
