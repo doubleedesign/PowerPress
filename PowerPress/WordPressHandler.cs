@@ -1,6 +1,4 @@
-﻿using System.Text.Json;
-
-namespace PowerPress;
+﻿namespace PowerPress;
 
 public class WordPressHandler {
 	private readonly ComposerHandler composerHandler;
@@ -116,39 +114,7 @@ public class WordPressHandler {
 	public void CreateAndActivateChildTheme() {
 		Directory.SetCurrentDirectory(this.config.WpDir);
 
-		string authorName = this.ui.PromptForText("Enter the author name for the child theme", "Double-E Design");
-		string authorUri = this.ui.PromptForText("Enter the author URI for the child theme", "https://www.doubleedesign.com.au");
-
-		string siteName = this.config.SiteName;
-		string themeDirectoryName = this.config.SiteSlug;
-		string themeUri = this.config.ProductionUrl;
-
-		this.logger.InfoMessage("Child theme configuration:");
-		Dictionary<string, string> themeConfig = new() {
-			{ "Name", siteName },
-			{ "Template", "comet-canvas-blocks" },
-			{ "Author", authorName },
-			{ "Author URI", authorUri },
-			{ "Theme URI", themeUri }
-		};
-		this.logger.DisplayJsonTable(JsonSerializer.Serialize(themeConfig));
-
-		try {
-			string command = string.Join(" ",
-				"scaffold child-theme",
-				themeDirectoryName,
-				$"--theme_name=\"{siteName}\"",
-				"--parent_theme=comet-canvas-blocks",
-				$"--author=\"{authorName}\"",
-				$"--author_uri={authorUri}",
-				$"--theme_uri={themeUri}",
-				"--activate"
-			);
-			this.RunCliCommand(command);
-		}
-		catch (Exception e) {
-			this.logger.ErrorMessage(e.Message);
-		}
+		this.logger.WarningMessage("Child theme not scaffolded because I still need to update the script to use the client-theme boilerplate.\nYou'll need to rename it manually.");
 	}
 
 	public void RunPostinstallCleanup() {
