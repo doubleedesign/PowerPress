@@ -152,9 +152,11 @@ public class WordPressHandler {
 		this.composerHandler.RemoveDependency(thenRemove);
 	}
 
-	public void CopyPluginFromLocalPath(string source) {
+	public void CopyPluginFromLocalPath(string source, bool isMustUse) {
 		string pluginDirName = Path.GetFileName(source);
-		string dest = Path.Combine(this.config.WpDir, "wp-content", "plugins", pluginDirName);
+		string dest = isMustUse
+			? Path.Combine(this.config.WpDir, "wp-content", "mu-plugins", pluginDirName)
+			: Path.Combine(this.config.WpDir, "wp-content", "plugins", pluginDirName);
 
 		if (Directory.Exists(dest)) {
 			this.logger.InfoMessage($"Plugin {pluginDirName} directory already exists, skipping copy");

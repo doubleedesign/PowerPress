@@ -204,7 +204,7 @@ $Logger.DisplaySectionHeader("Plugins, Themes, and Uploads")
 # Add ACF Pro
 $defaultAcfProPath = "C:\Users\$username\PhpStormProjects\advanced-custom-fields-pro"
 $acfProPath = $UI.PromptForText("Enter the path to your local copy of the Advanced Custom Fields Pro plugin", $defaultAcfProPath)
-$WpHandler.CopyPluginFromLocalPath($acfProPath)
+$WpHandler.CopyPluginFromLocalPath($acfProPath, $True)
 
 # Optionally import wp-content from an existing backup
 $importContentChoice = $UI.PromptForYesOrNo(
@@ -258,17 +258,13 @@ if (-not $importingWpContent) {
 # Activate plugins in the appropriate order (accounting for dependencies some of them have)
 # Note: Comet Calendar is not auto-activated because not all sites require it. It should be either activated or deleted after setup.
 $plugins = @(
-	"advanced-custom-fields-pro",
 	"doublee-local-dev",
-	"doublee-base-plugin",
-	"doublee-tinymce",
 	"acf-advanced-image-field",
 	"ninja-forms",
 	"doublee-ninja-markup",
 	"autodescription",
 	"simply-disable-comments",
 	"doublee-breadcrumbs"
-	"comet-plugin-blocks"
 )
 $Logger.InfoMessage("Activating plugins");
 $plugins | ForEach-Object { $WpHandler.MaybeActivatePlugin($_) }
